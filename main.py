@@ -58,7 +58,7 @@ datasets = [
             {"instance": "36Guadalajara30.txt", "obj": 57476, "time": "1.16"},
             {"instance": "37Guadalajara20.txt", "obj": 59493, "time": "2.29"}
            ]
-datasets = [{"instance": "25SanAntonio20.txt", "obj": 24007, "time": "3.63"}]
+datasets = [ {"instance": "1Bari30.txt", "obj": 14600, "time": "0.06"}]
 
 for dataset in datasets:
     print(dataset["instance"])
@@ -102,27 +102,37 @@ for dataset in datasets:
         for(s, q) in source:
             c_copy[(s, n)] = 0
 
+    print(source, target)
+
     # initialize decision variable
-    x = {(s,t): model.continuous_var(name='x_{0}_{1}'.format(s,t)) for (s, q_s) in source for (t, q_t) in target}
+    x = {(s,t): model.continuous_var(name='x_{0}_{1}'.format(s,t)) for (s, _) in source for (t, _) in target}
 
     # minimize flow cost
-    model.minimize(model.sum(x[s,t]*c_copy.get((s,t), 0) for (s, q_s) in source for (t, q_t) in target))
+    model.minimize(model.sum(x[s,t]*c_copy.get((s,t), 0) for (s, _) in source for (t, _) in target))
 
     # set constraints
     # for each source node, total outgoing flow must be smaller than available quantity
     for (s, q) in source:
-        model.add_constraint(model.sum(x[s,t] for (t, q_t) in target) <= q)
+        model.add_constraint(model.sum(x[s,t] for (t, _) in target) <= q)
         
-    # for each target node, total ingoing flow must be greater thand demand
+    # for each target node, total ingoing flow must be greater than demand
     for (t, q) in target:
-        model.add_constraint(model.sum(x[s,t] for (s, q_s) in source) >= q)
+        model.add_constraint(model.sum(x[s,t] for (s, _) in source) >= abs(q))
 
     #model.print_information()
 
-    model.minimize(model.sum(x[s,t]*c_copy.get((s,t), 0)for (s, q_s) in source for (t, q_t) in target))
-
     solution = model.solve()
     solution.display()
+    reduced_costs = model.reduced_costs(x[s,t] for (s, _) in source for (t, _) in target)
+
+    i = 0
+    reduced_costs_index = []
+    for (s, _) in source:
+        for (t, _) in target:
+            reduced_costs_index.append(((s,t), reduced_costs[i]))
+            i += 1
+
+    print(reduced_costs_index)
 
     #if solution is None:
     #    new_value = {'Instance': dataset["instance"],  'Our obj': "None", 'Paper Obj': dataset["obj"], 'Our Time': "none", 'Paper Time': dataset["time"], 'GAP': "None"}
