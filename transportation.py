@@ -47,14 +47,21 @@ def build_target_source(N, n, q, c_copy):
 
 def solve_transportation_problem(N, n, c, q):
     model = Model(name='transshipment')
-
+    A = []
     c_copy = deepcopy(c)
 
     #split nodes in supply (source) and deficit(target)
     target, source, total_demand, total_supply = build_target_source(N, n, q, c_copy)
 
+    for (t, _) in target:
+        for(s, _) in source:
+            A.append((s, t))
+
     # initialize decision variable
     x = {(s,t): model.continuous_var(name='x_{0}_{1}'.format(s,t)) for (s, _) in source for (t, _) in target}
+
+    # variable to check if target has already been visited, so it must receive the total individual demand
+    b = {t: model.continuous_var(name='b_{0}'.format(t)) for (t, _) in target}
 
     # define objective function
     model.minimize(model.sum(x[s,t]*c_copy.get((s,t), 0) for (s, _) in source for (t, _) in target))
@@ -67,6 +74,9 @@ def solve_transportation_problem(N, n, c, q):
     # for each target node, total ingoing flow must be greater than demand
     for (t, q) in target:
         model.add_constraint(model.sum(x[s,t] for (s, _) in source) >= abs(q))
+
+    # constraint on b, not working (non funziona perché da nessuna parte la incrementiamo, semplicemente le setta a 1, forse deve basarsi su x?)
+    model.add_constraints(b[t] == 1 for (t, _) in target)
 
     solution = model.solve()
     reduced_costs = model.reduced_costs(x[s,t] for (s, _) in source for (t, _) in target)
