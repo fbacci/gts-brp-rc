@@ -72,6 +72,7 @@ if __name__ == "__main__":
 
         solution, reduced_costs = solve_transportation_problem(N, n, c, q)
         solution.display()
+        print(reduced_costs)
 
     #print(df)
 
