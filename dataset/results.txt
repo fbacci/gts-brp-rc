@@ -16,7 +16,7 @@
 16LaSpezia30.txt 20746 0.09 
 17LaSpezia20.txt 20746 0.09 
 18LaSpezia10.txt 22811 0.16 
-19BuenosAires30.txt 76999  1.36 
+19BuenosAires30.txt 76999 1.36 
 20BuenosAires20.txt 91619 23.26 
 21Ottawa30.txt 16202 0.06 
 22Ottawa20.txt 16202 0.06 

@@ -1,3 +1,16 @@
+def calculate_route_cost(cost_function, route):
+    """
+    Calculate cost of a route
+    """
+
+    # Add cost of the delimiters
+    cost = cost_function(0, route[0]) + cost_function(route[-1], 0)
+
+    for node, next_node in zip(route, route[1:]):
+        cost += cost_function(node, next_node)
+
+    return cost
+
 def open_dataset(file):
     dataset = open(file, "r")
 
@@ -28,46 +41,16 @@ def open_dataset(file):
 
     return (n_nodes, costs, q_vertices, c_vehicles)
 
-def write_cplex_solution(routes, n):
-    adjacencies_dict = {}
+def open_results(results_file):
+    results = []
 
-    for route in routes:
-        for i in range(1, len(route)):
-            adjacencies_dict[(route[i-1].id, route[i].id)] = 1
+    for r in results_file:
+        result_row = {}
+        splitted = r.split(" ")
+        result_row["instance"] = splitted[0]
+        result_row["cost"] = splitted[1]
+        result_row["time"] = splitted[2]
 
-    value_map = {}
+        results.append(result_row)
 
-    print(adjacencies_dict)
-
-    for i in range(0, n):
-        for j in range(0, n):
-           value_map["x_" + str(i) + "_" + str(j)] = 1 if (i,j) in adjacencies_dict else 0
-    
-    return value_map
-
-
-def print_routes(routes):
-    routes_dict = {}
-
-    for route in routes:
-        if route[0] != 0:
-            routes_dict[route[0]] = route[1]
-
-    while len(routes) > 0:
-        start_node = routes[0]
-        r = [start_node[0]]
-        next_node = start_node[1]
-
-        routes.remove((start_node[0], next_node))
-        r.append(next_node)
-        while True:
-            routes.remove((next_node,  routes_dict[next_node]))
-
-            if routes_dict[next_node] == start_node[0]:
-                r.append(start_node[0])
-                print(r)
-                break
-
-            next_node = routes_dict[next_node]
-
-            r.append(next_node)
+    return results

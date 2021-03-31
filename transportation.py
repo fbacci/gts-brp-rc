@@ -81,4 +81,4 @@ def solve_transportation_problem(N, n, c, q):
     duals = reorder_duals(source, target, duals)
 
 
-    return solution, reduced_costs, duals
+    return reduced_costs, duals
