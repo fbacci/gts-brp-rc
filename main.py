@@ -52,8 +52,6 @@ if __name__ == "__main__":
 
         # build transportation solution to get reduced cost and duals values
         reduced_costs, duals = solve_transportation_problem(N, n, c, q)
-        #print(reduced_costs)
-        #print(duals)
 
         # calculate reduced cost for all nodes and arcs
         reduced_costs_matrix = dict()
@@ -71,7 +69,7 @@ if __name__ == "__main__":
         #print(reduced_costs_matrix)
 
         # tabu search
-        ts = TabuSearch(routes_filtered, reduced_costs_matrix, 20, 15, cost_function, q, Q, N)
+        ts = TabuSearch(routes_filtered, reduced_costs_matrix, 500, 15, cost_function, q, Q, N)
         start_time = time.time()
         solution = ts.start(total_cost)
         end_time = time.time() - start_time
