@@ -70,9 +70,23 @@ if __name__ == "__main__":
         A = [(i, j) for i in V for j in V]
         #m = 80
 
-        solution, reduced_costs = solve_transportation_problem(N, n, c, q)
+        solution, reduced_costs, duals = solve_transportation_problem(N, n, c, q)
         solution.display()
         print(reduced_costs)
+        #print(duals)
+
+        # calculate reduced cost for all nodes and arcs
+        reduced_costs_matrix = dict()
+        for (i, j) in A:
+            if i != j:
+                reduced_costs_matrix[(i, j)] =  c[(i,j)] - duals[i] - duals[j]
+
+        # check if reduced costs are correct
+        for cost in reduced_costs:
+            i = cost[0][0]
+            j = cost[0][1]
+            assert cost[1] == c[(i,j)] - duals[i] - duals[j]
+            assert reduced_costs_matrix[(i, j)] == c[(i,j)] - duals[i] - duals[j]
 
     #print(df)
 

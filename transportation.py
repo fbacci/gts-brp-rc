@@ -11,6 +11,15 @@ def get_reduced_cost_index(source, target, reduced_costs):
     
     return reduced_costs_index
 
+def reorder_duals(source, target, duals):
+    lookup = [s for (s, _) in source] + [t for (t, _) in target]
+
+    reordered_duals = [0]*len(duals)
+    for i, item in enumerate(lookup):
+        reordered_duals[item] = duals[i]
+
+    return reordered_duals
+
 def build_target_source(N, n, q):
     target = []
     source = []
@@ -62,7 +71,14 @@ def solve_transportation_problem(N, n, c, q):
         model.add_constraint(model.sum(x[s, t] for (s, _) in source) >= abs(q))
 
     solution = model.solve()
+
+    # get reduces costs
     reduced_costs = model.reduced_costs(x[s, t] for (s, _) in source for (t, _) in target)
     reduced_costs = get_reduced_cost_index(source, target, reduced_costs)
 
-    return solution, reduced_costs
+    # get duals and reorder them
+    duals = model.dual_values(model.iter_constraints())
+    duals = reorder_duals(source, target, duals)
+
+
+    return solution, reduced_costs, duals
