@@ -3,6 +3,7 @@ import math
 from SplitRoute import convert_tsp_to_vrp
 from TwoOpt import TwoOpt
 from utils import calculate_route_cost
+import bisect
 
 class TabuSearch:
     """
@@ -10,27 +11,32 @@ class TabuSearch:
 
         Attributes:
             initial_solution: initial solution for the tabu method
+            reduced_costs: ordered by cost reduced cost of trasport problem
             iterations: max number of iterations
             tenure: maximum number of iterations of permanence of a move in the tabu list
             cost_function: a function which calculate the cost between two nodes
             q: demand at nodes
             Q: capacity vehicles
-            N: nodes
+            N: nodes without deposit
     """
-    def __init__(self, initial_solution, reduced_costs, iterations, tenure, cost_function, q, Q, N):
+    def __init__(self, initial_solution, reduced_costs_arcs, reduced_costs_costs, iterations, tenure, cost_function, q, Q, N):
         """
         Construct a Tabu Search Object
 
             Parameters:
                 initial_solution: initial solution for the tabu method
+                reduced_costs_arcs: arcs ordered by reduced cost of trasport problem
+                reduced_costs_costs: cost ordered by reduced cost of trasport problem
                 iterations: max number of iterations
                 tenure: maximum number of iterations of permanence of a move in the tabu list
                 cost_function: a function which calculate the cost between two nodes
                 q: demand at nodes
                 Q: capacity vehicles
+                N: nodes without deposit
         """
         self.initial_solution = initial_solution
-        self.reduced_costs = reduced_costs
+        self.reduced_costs_arcs = reduced_costs_arcs
+        self.reduced_costs_costs = reduced_costs_costs
         self.iterations = iterations
         self.tenure = tenure
         self.cost_function = cost_function
@@ -39,29 +45,27 @@ class TabuSearch:
         self.N = N
 
         self.initial_tenure = tenure
-    
-    def granular(self, N, reduced_costs, max_cost):
+
+        self.A = set()
+
+        # add deposit arcs
+        for node in N:
+            self.A.add((0, node))
+            self.A.add((node, 0))
+
+    def granular(self, N, max_cost):
         """
         Parameters:
-            N: number of nodes
-            reduced_costs: reduced costs of arcs
+            N: nodes without deposit
             max_cost: max reduced cost to consider
         """
 
-        A = set()
+        A = set(self.A)
+
+        index_last_reduced_cost = bisect.bisect_right(self.reduced_costs_costs, max_cost)
 
         # add arcs with reduced costs included in the threshold
-        for node1 in N:
-            for node2 in N:
-                if node1 != node2:
-                    current_arc_cost = reduced_costs.get((node1, node2))
-                    if current_arc_cost <= max_cost:
-                        A.add((node1, node2))
-
-        # add best solution arcs
-        for node in N:
-            A.add((0, node))
-            A.add((node, 0))
+        A.update(self.reduced_costs_arcs[0:index_last_reduced_cost])
 
         return A
 
@@ -75,10 +79,11 @@ class TabuSearch:
 
         iteration_number_max = 20
         tenure_increment = 10
+        percentage_increment = 0.8
+        percentage_decrement = 0.9
 
         tabu_list = collections.deque(maxlen=self.tenure)
         route = self.initial_solution
-        reduced_costs = self.reduced_costs
         best_route = {"route": self.initial_solution, "cost": initial_cost}
         best_tsp_route = self.initial_solution
 
@@ -86,22 +91,22 @@ class TabuSearch:
         best_count = 0
 
         A = None
-        min_cost = reduced_costs[min(reduced_costs.keys(), key=(lambda k: reduced_costs[k]))]
+        min_cost = self.reduced_costs_costs[0]
         max_cost = min_cost
 
-        max_reduced_cost = reduced_costs[max(reduced_costs.keys(), key=(lambda k: reduced_costs[k]))]
+        max_reduced_cost = self.reduced_costs_costs[-1]
 
-        A = self.granular(self.N, reduced_costs, max_cost)
+        A = self.granular(self.N, max_cost)
 
         # stop condition
         while self.iterations-it_count > 0:
             if max_cost >= max_reduced_cost:
-                print("Max cost")
+                #print("Max cost")
                 break
             if best_count == iteration_number_max:
                 # after iteration_number_max iterations without best solution, augment the granularity
-                max_cost = max_cost + abs(max_cost*0.8)
-                A = self.granular(self.N, reduced_costs, max_cost)
+                max_cost = max_cost + abs(max_cost*percentage_increment)
+                A = self.granular(self.N, max_cost)
                 best_count = 0
                 
                 # if the number is near 0 we can't increment it using percentuals
@@ -133,6 +138,10 @@ class TabuSearch:
                 for trip in vrp_route:
                     vrp_cost += calculate_route_cost(self.cost_function, trip)
 
+                    if vrp_cost > best_route["cost"]:
+                        vrp_cost = math.inf
+                        break
+
                 if vrp_cost < best_route["cost"]:
                     best_route["route"] = vrp_route
                     best_route["cost"] = vrp_cost
@@ -141,8 +150,8 @@ class TabuSearch:
                     best_count = 0
 
                     # decrease granularity
-                    max_cost = max_cost - abs(max_cost*0.9)
-                    A = self.granular(self.N, reduced_costs, max_cost)
+                    max_cost = max_cost - abs(max_cost*percentage_decrement)
+                    A = self.granular(self.N, max_cost)
                     best_count = 0
 
                     # add best solution arcs to granular

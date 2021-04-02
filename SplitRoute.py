@@ -26,11 +26,17 @@ def split(S, q, n, W, d, L, cost_function):
         cost = 0
         j = i
         P_dup = [0]
+        sum_qp = []
 
         while True:
             P_dup.append(S[j])
 
-            sum_qp = [sum([q[p] for p in P_dup[1:i+1]]) for i, _ in enumerate(P_dup[1:], start=1)]
+            # cumulative sum
+            if len(sum_qp) == 0:
+                sum_qp.append(q[P_dup[-1]])
+            else:
+                sum_qp.append(sum_qp[-1] + q[P_dup[-1]])
+
             qp_max = max([0, max(sum_qp)])
             qp_min = min(sum_qp)
 

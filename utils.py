@@ -1,3 +1,5 @@
+from itertools import islice
+
 def calculate_route_cost(cost_function, route):
     """
     Calculate cost of a route
@@ -6,7 +8,7 @@ def calculate_route_cost(cost_function, route):
     # Add cost of the delimiters
     cost = cost_function(0, route[0]) + cost_function(route[-1], 0)
 
-    for node, next_node in zip(route, route[1:]):
+    for node, next_node in zip(route, islice(route, 1, None)):
         cost += cost_function(node, next_node)
 
     return cost

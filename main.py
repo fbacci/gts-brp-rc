@@ -30,7 +30,7 @@ if __name__ == "__main__":
         n, c, q, Q  = utils.open_dataset("dataset/" + result["instance"])
 
         def cost_function(from_node, to_node):
-            return c[(from_node, to_node)]
+            return c[from_node, to_node]
 
         N = [i for i in range(1, n)]
         V = [0] + N
@@ -66,10 +66,12 @@ if __name__ == "__main__":
             assert cost[1] == c[(i,j)] - duals[i] - duals[j]
             assert reduced_costs_matrix[(i, j)] == c[(i,j)] - duals[i] - duals[j]
 
-        #print(reduced_costs_matrix)
+        # order reduced costs by cost
+        reduced_costs_arcs = [k for k,v in {k: v for k, v in sorted(reduced_costs_matrix.items(), key=lambda item: item[1])}.items()]
+        reduced_costs_costs = [v for k,v in {k: v for k, v in sorted(reduced_costs_matrix.items(), key=lambda item: item[1])}.items()]
 
         # tabu search
-        ts = TabuSearch(routes_filtered, reduced_costs_matrix, 500, 15, cost_function, q, Q, N)
+        ts = TabuSearch(routes_filtered, reduced_costs_arcs, reduced_costs_costs, 500, 15, cost_function, q, Q, N)
         start_time = time.time()
         solution = ts.start(total_cost)
         end_time = time.time() - start_time
