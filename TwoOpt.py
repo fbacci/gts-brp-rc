@@ -19,7 +19,7 @@ class TwoOpt:
 
         return route_to_i + route_to_k + route_to_end
 
-    def start(self, A):
+    def start(self, A, tabu_list):
         swaps = []
 
         for i in range(1, len(self.route)):
@@ -28,15 +28,13 @@ class TwoOpt:
 
             #print("Old:", self.route)
             for j in range(i+1, len(self.route)):
-                if (self.route[j-1], self.route[j]) not in A:
+                if (self.route[j-1], self.route[j]) not in A or (self.route[i], self.route[j]) in tabu_list:
                     continue 
                 new_route = self._opt_swap(self.route[:], i, j)
 
                 cost = calculate_route_cost(self.cost_function, new_route[1:-1])
 
-                #print("New:", new_route, i, j, cost)
-
-                swaps.append({"move": [self.route[i], self.route[j]], "route": new_route[1:-1], "cost": cost})
+                swaps.append({"move": (self.route[i], self.route[j]), "route": new_route[1:-1], "cost": cost})
 
         # order routes using the cost
         return sorted(swaps, key=lambda k: k['cost']) 

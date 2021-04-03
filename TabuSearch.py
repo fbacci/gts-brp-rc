@@ -116,18 +116,11 @@ class TabuSearch:
                 self.tenure += tenure_increment
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
 
-            two_opt_neighborhoods = TwoOpt(route, self.cost_function).start(A)
+            two_opt_neighborhoods = TwoOpt(route, self.cost_function).start(A, tabu_list)
 
-            # neighborhood with minimum cost
-            best_valid_neighborhood = None
-
-            # find the best neighborhood which doesn't use tabu moves
-            for neighborhood in two_opt_neighborhoods:
-                if neighborhood["move"] not in tabu_list:
-                    best_valid_neighborhood = neighborhood
-                    break
-
-            if best_valid_neighborhood is not None:
+            if len(two_opt_neighborhoods) != 0:
+                best_valid_neighborhood = two_opt_neighborhoods[0]
+                
                 tabu_list.append(best_valid_neighborhood["move"])
 
                 # create a feasible route for VRP
