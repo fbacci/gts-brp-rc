@@ -2,6 +2,7 @@ import collections
 import math
 from SplitRoute import convert_tsp_to_vrp
 from TwoOpt import TwoOpt
+from ThreeOpt import ThreeOpt
 from utils import calculate_route_cost
 import bisect
 
@@ -11,7 +12,7 @@ class TabuSearch:
 
         Attributes:
             initial_solution: initial solution for the tabu method
-            reduced_costs: ordered by cost reduced cost of trasport problem
+            reduced_costs: ordered by cost reduced cost of transport problem
             iterations: max number of iterations
             tenure: maximum number of iterations of permanence of a move in the tabu list
             cost_function: a function which calculate the cost between two nodes
@@ -25,8 +26,8 @@ class TabuSearch:
 
             Parameters:
                 initial_solution: initial solution for the tabu method
-                reduced_costs_arcs: arcs ordered by reduced cost of trasport problem
-                reduced_costs_costs: cost ordered by reduced cost of trasport problem
+                reduced_costs_arcs: arcs ordered by reduced cost of transport problem
+                reduced_costs_costs: cost ordered by reduced cost of transport problem
                 iterations: max number of iterations
                 tenure: maximum number of iterations of permanence of a move in the tabu list
                 cost_function: a function which calculate the cost between two nodes
@@ -109,18 +110,18 @@ class TabuSearch:
                 A = self.granular(self.N, max_cost)
                 best_count = 0
                 
-                # if the number is near 0 we can't increment it using percentuals
+                # if the number is near 0 we can't increment it using percentages
                 if max_cost > -100 and max_cost <= 0:
                     max_cost = 1000
 
                 self.tenure += tenure_increment
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
 
-            two_opt_neighborhoods = TwoOpt(route, self.cost_function).start(A, tabu_list)
+            two_opt_neighborhoods = ThreeOpt(route, self.cost_function).start(A, tabu_list)
 
             if len(two_opt_neighborhoods) != 0:
                 best_valid_neighborhood = two_opt_neighborhoods[0]
-                
+
                 tabu_list.append(best_valid_neighborhood["move"])
 
                 # create a feasible route for VRP

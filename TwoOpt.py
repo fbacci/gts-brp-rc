@@ -26,7 +26,6 @@ class TwoOpt:
             if (self.route[i-1], self.route[i]) not in A:
                 continue
 
-            #print("Old:", self.route)
             for j in range(i+1, len(self.route)):
                 if (self.route[j-1], self.route[j]) not in A or (self.route[i], self.route[j]) in tabu_list:
                     continue 
