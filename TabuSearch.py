@@ -78,8 +78,8 @@ class TabuSearch:
             initial_cost: initial solution cost
         """
 
-        iteration_number_max = 20
-        tenure_increment = 10
+        iteration_number_max = 8
+        tenure_increment = 15
         percentage_increment = 0.8
         percentage_decrement = 0.9
 
@@ -99,6 +99,8 @@ class TabuSearch:
 
         A = self.granular(self.N, max_cost)
 
+        threeopt = ThreeOpt(self.cost_function, len(route))
+
         # stop condition
         while self.iterations-it_count > 0:
             if max_cost >= max_reduced_cost:
@@ -117,7 +119,7 @@ class TabuSearch:
                 self.tenure += tenure_increment
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
 
-            two_opt_neighborhoods = ThreeOpt(route, self.cost_function).start(A, tabu_list)
+            two_opt_neighborhoods = threeopt.start(route, A, tabu_list)
 
             if len(two_opt_neighborhoods) != 0:
                 best_valid_neighborhood = two_opt_neighborhoods[0]
