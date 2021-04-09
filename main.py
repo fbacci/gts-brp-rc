@@ -6,6 +6,8 @@ from Network import Network
 from Node import Node
 import pandas as pd
 from docplex.mp.solution import SolveSolution
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 """
 n: station number
@@ -17,6 +19,15 @@ Q: vehicle capacity
 q: demand at stations
 c: cost matrix
 """
+
+def graph(solutions, dataset):
+    data_plot = pd.DataFrame(solutions)
+    
+    fobjplot = sns.lineplot(x = "iteration", y = "f obj", data=data_plot, markevery=[i for i, solution in enumerate(solutions) if solution["best"] == True], marker="o", ms=5, markerfacecolor='red')
+
+    fig = fobjplot.get_figure()
+    fig.savefig("graphs/" + dataset + ".png")
+    fig.clf() 
 
 if __name__ == "__main__":
     df = pd.DataFrame(columns=['Instance', 'Our obj', 'Paper Obj', 'Our Time', 'Paper Time', 'GAP'])
@@ -73,13 +84,18 @@ if __name__ == "__main__":
         # tabu search
         ts = TabuSearch(routes_filtered, reduced_costs_arcs, reduced_costs_costs, 500, 15, cost_function, q, Q, N)
         start_time = time.time()
-        solution = ts.start(total_cost)
+        solution, solutions = ts.start(total_cost)
         end_time = time.time() - start_time
 
         new_value = new_value = {'Instance': result["instance"], 'Paper Obj': result["cost"], 'Our obj': solution["cost"], 'Paper Time': result["time"], 'Our Time': float("{:.2f}".format(end_time)), 'GAP': float("{:.2f}".format(100*solution["cost"]/float(result["cost"])-100))}
         df = df.append(new_value, ignore_index=True)
 
-    print(df)
+        
+        #print(solutions)
+        graph(solutions, result["instance"])
+
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+        print(df)
     print("Time avg:", df["Our Time"].mean())
     print("GAP avg:", df["GAP"].mean())
 

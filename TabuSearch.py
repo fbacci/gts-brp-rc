@@ -78,8 +78,8 @@ class TabuSearch:
             initial_cost: initial solution cost
         """
 
-        iteration_number_max = 8
-        tenure_increment = 15
+        iteration_number_max = 20
+        tenure_increment = 10
         percentage_increment = 0.8
         percentage_decrement = 0.9
 
@@ -99,7 +99,9 @@ class TabuSearch:
 
         A = self.granular(self.N, max_cost)
 
-        threeopt = ThreeOpt(self.cost_function, len(route))
+        opt = TwoOpt(self.cost_function)
+
+        solutions = [{"iteration": -1, "f obj": initial_cost, "best": True}]
 
         # stop condition
         while self.iterations-it_count > 0:
@@ -119,7 +121,7 @@ class TabuSearch:
                 self.tenure += tenure_increment
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
 
-            two_opt_neighborhoods = threeopt.start(route, A, tabu_list)
+            two_opt_neighborhoods = opt.start(route, A, tabu_list)
 
             if len(two_opt_neighborhoods) != 0:
                 best_valid_neighborhood = two_opt_neighborhoods[0]
@@ -135,10 +137,13 @@ class TabuSearch:
                     vrp_cost += calculate_route_cost(self.cost_function, trip)
 
                     if vrp_cost > best_route["cost"]:
-                        vrp_cost = math.inf
                         break
 
+                solutions.append({"iteration": it_count, "f obj": vrp_cost, "best": False})
+
                 if vrp_cost < best_route["cost"]:
+                    solutions[-1]["best"] = True
+
                     best_route["route"] = vrp_route
                     best_route["cost"] = vrp_cost
                     route = best_valid_neighborhood["route"]
@@ -163,9 +168,9 @@ class TabuSearch:
                 else:
                     best_count += 1
 
-                it_count += 1
             else:
                 # if a valid neighborhood is not found, augment the granularity
                 best_count = iteration_number_max
 
-        return best_route
+            it_count += 1
+        return best_route, solutions
