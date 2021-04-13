@@ -2,12 +2,12 @@ import utils
 import time
 from TabuSearch import TabuSearch
 from transportation import solve_transportation_problem
-from Network import Network
-from Node import Node
 import pandas as pd
 from docplex.mp.solution import SolveSolution
 import seaborn as sns
 import matplotlib.pyplot as plt
+from saving import initial_solution
+from utils import calculate_route_cost
 
 """
 n: station number
@@ -49,16 +49,14 @@ if __name__ == "__main__":
         #m = 80
 
         # build initial solution
-        source = Node(0, q[0])
-        nodes = [Node(i, q[i]) for i in range(1, n)]
-
-        network = Network(source, c, Q)
-        network.add_nodes(nodes)
-
-        routes, total_cost = network.build_route()
+        routes = initial_solution(N, q, Q, cost_function)
+        total_cost = 0
+        
+        for route in routes:
+            total_cost += calculate_route_cost(cost_function, route[1:-2])
 
         # convert vrp route to tsp route
-        routes_flattened = [node.id for route in routes for node in route]
+        routes_flattened = [node for route in routes for node in route]
         routes_filtered = list(filter(lambda x: x != 0, routes_flattened))
 
         # build transportation solution to get reduced cost and duals values
