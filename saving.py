@@ -22,11 +22,13 @@ def check_feasibility(route, q, Q):
 def merge(savings, routes, k, q, Q):
     max_node_list = []
     current_route = 0
+    max_iterations = len(routes)
 
-    while(len(routes) > k):
+    while(len(routes) > k and max_iterations > 0):
         i = routes[current_route][1]
         j = routes[current_route][-2]
         savings_route = []
+
 
         for index, route in enumerate(routes):
             if index == current_route:
@@ -58,10 +60,13 @@ def merge(savings, routes, k, q, Q):
         if len(savings_route) > 0:
             max_node = max(savings_route, key = lambda x: x["saving"])
 
+            max_iterations = len(routes)
+
             routes[current_route] = max_node["new_route"]
             del routes[max_node["route"]]
         else:
             current_route = (current_route + 1) % len(routes)
+            max_iterations -= 1
 
     return routes
 

@@ -53,7 +53,7 @@ if __name__ == "__main__":
         total_cost = 0
         
         for route in routes:
-            total_cost += calculate_route_cost(cost_function, route[1:-2])
+            total_cost += calculate_route_cost(cost_function, route[1:-1])
 
         # convert vrp route to tsp route
         routes_flattened = [node for route in routes for node in route]
