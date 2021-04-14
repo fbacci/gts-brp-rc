@@ -64,6 +64,9 @@ def merge(savings, routes, k, q, Q):
 
             routes[current_route] = max_node["new_route"]
             del routes[max_node["route"]]
+
+            if max_node["route"] < current_route:
+                current_route -= 1
         else:
             current_route = (current_route + 1) % len(routes)
             max_iterations -= 1
