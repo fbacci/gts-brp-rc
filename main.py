@@ -8,6 +8,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from saving import initial_solution
 from utils import calculate_route_cost
+from Network import Network
+from Node import Node
 
 """
 n: station number
@@ -88,11 +90,11 @@ if __name__ == "__main__":
         new_value = new_value = {'Instance': result["instance"], 'Paper Obj': result["cost"], 'Our obj': solution["cost"], 'Paper Time': result["time"], 'Our Time': float("{:.2f}".format(end_time)), 'GAP': float("{:.2f}".format(100*solution["cost"]/float(result["cost"])-100))}
         df = df.append(new_value, ignore_index=True)
 
-        
-        #print(solutions)
+        #print(solution)
+
         graph(solutions, result["instance"])
 
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         print(df)
     print("Time avg:", df["Our Time"].mean())
     print("GAP avg:", df["GAP"].mean())

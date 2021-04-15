@@ -3,6 +3,7 @@ import math
 from SplitRoute import convert_tsp_to_vrp
 from TwoOpt import TwoOpt
 from ThreeOpt import ThreeOpt
+from LocalSearch import move, move_2_reverse, swap_1_1, swap_2_2, swap_1_1_1, swap_3_3_reversed
 from utils import calculate_route_cost
 import bisect
 
@@ -79,14 +80,15 @@ class TabuSearch:
         """
 
         iteration_number_max = 20
-        tenure_increment = 10
-        percentage_increment = 0.8
-        percentage_decrement = 0.9
+        tenure_increment = 16
+        percentage_increment = 0.5
+        percentage_decrement = 0.7
 
         tabu_list = collections.deque(maxlen=self.tenure)
         route = self.initial_solution
         best_route = {"route": self.initial_solution, "cost": initial_cost}
-        best_tsp_route = self.initial_solution
+        best_tsp_route = {"route": self.initial_solution, "cost": initial_cost}
+        best_valid_neighborhood = {"move": None, "route": self.initial_solution, "cost": initial_cost}
 
         it_count = 0
         best_count = 0
@@ -105,13 +107,17 @@ class TabuSearch:
 
         # stop condition
         while self.iterations-it_count > 0:
+            augmented = False
             if max_cost >= max_reduced_cost:
                 #print("Max cost")
+                
                 break
-            if best_count == iteration_number_max:
+            if best_count >= iteration_number_max:
                 # after iteration_number_max iterations without best solution, augment the granularity
                 max_cost = max_cost + abs(max_cost*percentage_increment)
+
                 A = self.granular(self.N, max_cost)
+
                 best_count = 0
                 
                 # if the number is near 0 we can't increment it using percentages
@@ -119,12 +125,23 @@ class TabuSearch:
                     max_cost = 1000
 
                 self.tenure += tenure_increment
+                
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
+
+                augmented = True
+                
+                best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.cost_function)
+                best_valid_neighborhood = swap_2_2(best_valid_neighborhood, self.cost_function)
+                best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.cost_function)
+                best_valid_neighborhood = move(best_valid_neighborhood, self.cost_function)
+                best_valid_neighborhood = swap_1_1(best_valid_neighborhood, self.cost_function)
 
             two_opt_neighborhoods = opt.start(route, A, tabu_list)
 
-            if len(two_opt_neighborhoods) != 0:
-                best_valid_neighborhood = two_opt_neighborhoods[0]
+            if len(two_opt_neighborhoods) != 0 or augmented:
+                if not augmented:
+                    best_valid_neighborhood = two_opt_neighborhoods[0]
+                    augmented = False
 
                 tabu_list.append(best_valid_neighborhood["move"])
 
@@ -147,7 +164,7 @@ class TabuSearch:
                     best_route["route"] = vrp_route
                     best_route["cost"] = vrp_cost
                     route = best_valid_neighborhood["route"]
-                    best_tsp_route = best_valid_neighborhood["route"]
+                    best_tsp_route = {"route": best_valid_neighborhood["route"], "cost": best_valid_neighborhood["cost"]}
                     best_count = 0
 
                     # decrease granularity
