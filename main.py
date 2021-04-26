@@ -90,6 +90,7 @@ if __name__ == "__main__":
         new_value = new_value = {'Instance': result["instance"], 'Paper Obj': result["cost"], 'Our obj': solution["cost"], 'Paper Time': result["time"], 'Our Time': float("{:.2f}".format(end_time)), 'GAP': float("{:.2f}".format(100*solution["cost"]/float(result["cost"])-100))}
         df = df.append(new_value, ignore_index=True)
 
+        print(100*solution["cost"]/float(result["cost"])-100)
         #print(solution)
 
         graph(solutions, result["instance"])

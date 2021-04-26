@@ -1,4 +1,6 @@
 from utils import calculate_route_cost
+from itertools import accumulate
+from SplitRoute import convert_tsp_to_vrp
 
 class TwoOpt:
     def __init__(self, cost_function):
@@ -17,10 +19,11 @@ class TwoOpt:
 
         return route_to_i + route_to_k + route_to_end
 
-    def start(self, route, A, tabu_list):
+    def start(self, route, A, tabu_list, q, Q):
         swaps = []
 
         route = [0]+route+[0]
+        sumq = abs(sum([abs(c) for c in q]))
 
         for i in range(1, len(route)):
             if (route[i-1], route[i]) not in A:
@@ -33,7 +36,17 @@ class TwoOpt:
 
                 cost = calculate_route_cost(self.cost_function, new_route[1:-1])
 
-                swaps.append({"move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost})
+                sum_qp = list(accumulate([q[node] for node in new_route]))
+                qp_max = max([0, max(sum_qp)])
+                qp_min = min(sum_qp)
+
+                if qp_min > 0:
+                    qp_min = 0
+
+                cost += (qp_max - qp_min)*(cost/sumq)
+
+                swaps.append({"min": (qp_max - qp_min), "move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost})
 
         # order routes using the cost
-        return sorted(swaps, key=lambda k: k['cost']) 
+        sorte = sorted(swaps, key=lambda k: k['cost'])
+        return sorte
