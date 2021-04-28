@@ -13,6 +13,38 @@ def calculate_route_cost(cost_function, route):
 
     return cost
 
+def get_cost_adj(new_route, q, Q, cost_function):
+    qp = []
+    n_vehicles = 1
+    cost_adj = 0
+    qp_max = 0
+    qp_min = 0
+    sum_qp = 0
+
+    for index, node in enumerate(new_route[1:-1], 1):
+        if len(qp) > 0:
+            sum_qp = sum_qp + q[node]
+        else:
+            sum_qp = q[node]
+
+        qp.append(q[node])
+
+        if sum_qp > qp_max:
+            qp_max = sum_qp
+        
+        if sum_qp < qp_min:
+            qp_min = sum_qp
+
+        if qp_max - qp_min > Q:
+            cost_adj += cost_function(new_route[index-1], 0) + cost_function(0, node)
+            qp = [q[node]]
+            sum_qp = q[node]
+            qp_min = 0
+            qp_max = 0
+            n_vehicles += 1
+
+    return n_vehicles, cost_adj
+
 def open_dataset(file):
     dataset = open(file, "r")
 

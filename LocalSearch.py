@@ -1,19 +1,6 @@
-from utils import calculate_route_cost
+from utils import calculate_route_cost, get_cost_adj
 from SplitRoute import convert_tsp_to_vrp
 from itertools import accumulate
-
-def count_vehicle(new_route, q, Q):
-    sum_q = 0
-    n_vehicles = 1
-
-    for node in new_route:
-        sum_q += q[node]
-
-        if sum_q > Q:
-            sum_q = q[node]
-            n_vehicles += 1
-
-    return n_vehicles
 
 def move(best, cost_function, q, Q):
     best_list = []
@@ -25,15 +12,16 @@ def move(best, cost_function, q, Q):
             route.insert(j, best["route"][i])
 
             cost = calculate_route_cost(cost_function, route)
-            n_vehicles = count_vehicle(route, q, Q)
+            n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-            if best["n_vehicles"] > n_vehicles and best["cost"] > cost:
-                best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
+            cost += cost_adj
+
+            best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
 
     if len(best_list) == 0:
         return best
     
-    sorto = sorted(best_list, key = lambda x: (x["n_vehicles"], x["cost"]))    
+    sorto = sorted(best_list, key = lambda x: (x["cost"]))    
     return sorto[0]
 
 def move_2_reverse(best, cost_function, q, Q):
@@ -50,15 +38,16 @@ def move_2_reverse(best, cost_function, q, Q):
             route.insert(j+1, best["route"][i])
 
             cost = calculate_route_cost(cost_function, route)
-            n_vehicles = count_vehicle(route, q, Q)
+            n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-    if best["n_vehicles"] > n_vehicles and best["cost"] > cost:
-                best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
+            cost += cost_adj
+
+            best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
 
     if len(best_list) == 0:
         return best
     
-    sorto = sorted(best_list, key = lambda x: (x["n_vehicles"], x["cost"]))    
+    sorto = sorted(best_list, key = lambda x: (x["cost"]))    
 
     return sorto[0]
 
@@ -71,15 +60,16 @@ def swap_1_1(best, cost_function, q, Q):
             route[i], route[j] = route[j], route[i]
 
             cost = calculate_route_cost(cost_function, route)
-            n_vehicles = count_vehicle(route, q, Q)
+            n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-    if best["n_vehicles"] > n_vehicles and best["cost"] > cost:
-                best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
+            cost += cost_adj
+
+            best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
 
     if len(best_list) == 0:
         return best
     
-    sorto = sorted(best_list, key = lambda x: (x["n_vehicles"], x["cost"]))    
+    sorto = sorted(best_list, key = lambda x: (x["cost"]))    
 
     return sorto[0]
 
@@ -94,15 +84,16 @@ def swap_2_2(best, cost_function, q, Q):
             route[j:j+2] = swap
 
             cost = calculate_route_cost(cost_function, route)
-            n_vehicles = count_vehicle(route, q, Q)
+            n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-    if best["n_vehicles"] > n_vehicles and best["cost"] > cost:
-                best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
+            cost += cost_adj
+
+            best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
 
     if len(best_list) == 0:
         return best
     
-    sorto = sorted(best_list, key = lambda x: (x["n_vehicles"], x["cost"]))    
+    sorto = sorted(best_list, key = lambda x: (x["cost"]))    
 
     return sorto[0]
 
@@ -117,23 +108,24 @@ def swap_1_1_1(best, cost_function, q, Q):
                 route[i], route[j], route[k] = route[j], route[k], route[i]
 
                 cost = calculate_route_cost(cost_function, route)
-                n_vehicles = count_vehicle(route, q, Q)
+                n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-                if cost < best["cost"]:
-                    best_list.append({"move": None, "route": route, "cost": cost})
+                cost += cost_adj
+
+                best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
                 
                 route[i], route[j], route[k] = route[k], route[i], route[j]
 
                 cost = calculate_route_cost(cost_function, route)
-                n_vehicles = count_vehicle(route, q, Q)
+                n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-                if cost < best["cost"]:
-                    best_list.append({"move": None, "route": route, "cost": cost})          
+                cost += cost_adj
+                best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})          
 
     if len(best_list) == 0:
         return best
     
-    sorto = sorted(best_list, key = lambda x: (x["n_vehicles"], x["cost"]))    
+    sorto = sorted(best_list, key = lambda x: (x["cost"]))    
 
     return sorto[0]
 
@@ -148,15 +140,16 @@ def swap_3_3_reversed(best, cost_function, q, Q):
             route[j:j+3] = reversed(swap)
 
             cost = calculate_route_cost(cost_function, route)
-            n_vehicles = count_vehicle(route, q, Q)
+            n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-            if best["n_vehicles"] > n_vehicles and best["cost"] > cost:
-                best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
+            cost += cost_adj
+            
+            best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
 
     if len(best_list) == 0:
         return best
     
-    sorto = sorted(best_list, key = lambda x: (x["n_vehicles"], x["cost"]))    
+    sorto = sorted(best_list, key = lambda x: (x["cost"]))    
 
     return sorto[0]
 
@@ -171,15 +164,16 @@ def swap_3_3(best, cost_function, q, Q):
             route[j:j+3] = swap
 
             cost = calculate_route_cost(cost_function, route)
-            n_vehicles = count_vehicle(route, q, Q)
+            n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-            if best["n_vehicles"] > n_vehicles and best["cost"] > cost:
-                        best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
+            cost += cost_adj
+            
+            best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
 
     if len(best_list) == 0:
         return best
     
-    sorto = sorted(best_list, key = lambda x: (x["n_vehicles"], x["cost"]))    
+    sorto = sorted(best_list, key = lambda x: (x["cost"]))    
 
     return sorto[0]
 
@@ -212,14 +206,15 @@ def swap_2_1(best, cost_function, q, Q):
             route[i+1:i+2] = swap
 
             cost = calculate_route_cost(cost_function, route)
-            n_vehicles = count_vehicle(route, q, Q)
+            n_vehicles, cost_adj = get_cost_adj(route, q, Q, cost_function)
 
-            if best["n_vehicles"] > n_vehicles and best["cost"] > cost:
-                        best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
+            cost += cost_adj
+
+            best_list.append({"move": None, "route": route, "cost": cost, "n_vehicles": n_vehicles})
 
     if len(best_list) == 0:
         return best
     
-    sorto = sorted(best_list, key = lambda x: (x["n_vehicles"], x["cost"]))    
+    sorto = sorted(best_list, key = lambda x: (x["cost"]))    
 
     return sorto[0]

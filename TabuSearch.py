@@ -79,10 +79,10 @@ class TabuSearch:
             initial_cost: initial solution cost
         """
 
-        iteration_number_max = 19
-        tenure_increment = 10
-        percentage_increment = 0.6
-        percentage_decrement = 0.7
+        iteration_number_max = 18
+        tenure_increment = 7
+        percentage_increment = 0.1
+        percentage_decrement = 0.2
 
         tabu_list = collections.deque(maxlen=self.tenure)
         route = self.initial_solution
@@ -128,13 +128,15 @@ class TabuSearch:
                 
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
 
-                #augmented = True
-
-                #best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.cost_function, self.q, self.Q)
-                #best_valid_neighborhood = swap_2_2(best_valid_neighborhood, self.cost_function, self.q, self.Q)
-                #best_valid_neighborhood = swap_1_1(best_valid_neighborhood, self.cost_function, self.q, self.Q)
-                #best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.cost_function, self.q, self.Q)
-                #best_valid_neighborhood = move(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                augmented = True
+                
+                
+                best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                best_valid_neighborhood = swap_3_3(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                best_valid_neighborhood = swap_2_2(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                best_valid_neighborhood = swap_1_1(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                best_valid_neighborhood = move(best_valid_neighborhood, self.cost_function, self.q, self.Q)
 
             two_opt_neighborhoods = opt.start(route, A, tabu_list, self.q, self.Q)
 

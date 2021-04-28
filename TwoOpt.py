@@ -1,4 +1,4 @@
-from utils import calculate_route_cost
+from utils import calculate_route_cost, get_cost_adj
 from itertools import accumulate
 from SplitRoute import convert_tsp_to_vrp
 from operator import itemgetter
@@ -47,34 +47,7 @@ class TwoOpt:
 
                 cost = calculate_route_cost(self.cost_function, new_route[1:-1])
 
-                qp = []
-                n_vehicles = 1
-                cost_adj = 0
-                qp_max = 0
-                qp_min = 0
-                sum_qp = 0
-
-                for index, node in enumerate(new_route[1:-1], 1):
-                    if len(qp) > 0:
-                        sum_qp = sum_qp + q[node]
-                    else:
-                        sum_qp = q[node]
-
-                    qp.append(q[node])
-
-                    if sum_qp > qp_max:
-                        qp_max = sum_qp
-                    
-                    if sum_qp < qp_min:
-                        qp_min = sum_qp
-
-                    if qp_max - qp_min > Q:
-                        cost_adj += self.cost_function(new_route[index-1], 0) + self.cost_function(0, node)
-                        qp = [q[node]]
-                        sum_qp = q[node]
-                        qp_min = 0
-                        qp_max = 0
-                        n_vehicles += 1
+                n_vehicles, cost_adj = get_cost_adj(new_route, q, Q, self.cost_function)
 
                 #assert n_vehicles <= len(vrp_route)
 
