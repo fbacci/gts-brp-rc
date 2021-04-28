@@ -128,13 +128,13 @@ class TabuSearch:
                 
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
 
-                augmented = True
+                #augmented = True
 
-                best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.cost_function, self.q, self.Q)
-                best_valid_neighborhood = swap_2_2(best_valid_neighborhood, self.cost_function, self.q, self.Q)
-                best_valid_neighborhood = swap_1_1(best_valid_neighborhood, self.cost_function, self.q, self.Q)
-                best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.cost_function, self.q, self.Q)
-                best_valid_neighborhood = move(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                #best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                #best_valid_neighborhood = swap_2_2(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                #best_valid_neighborhood = swap_1_1(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                #best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.cost_function, self.q, self.Q)
+                #best_valid_neighborhood = move(best_valid_neighborhood, self.cost_function, self.q, self.Q)
 
             two_opt_neighborhoods = opt.start(route, A, tabu_list, self.q, self.Q)
 

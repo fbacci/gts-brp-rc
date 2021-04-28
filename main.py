@@ -91,7 +91,7 @@ if __name__ == "__main__":
         df = df.append(new_value, ignore_index=True)
 
         print(100*solution["cost"]/float(result["cost"])-100)
-        #print(solution)
+        print(solution)
 
         graph(solutions, result["instance"])
 

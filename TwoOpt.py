@@ -1,6 +1,7 @@
 from utils import calculate_route_cost
 from itertools import accumulate
 from SplitRoute import convert_tsp_to_vrp
+from operator import itemgetter
 
 class TwoOpt:
     def __init__(self, cost_function):
@@ -34,19 +35,60 @@ class TwoOpt:
                     continue 
                 new_route = self._opt_swap(route, i, j)
 
+                #vrp_route = convert_tsp_to_vrp(new_route[1:-1], q, len(new_route[1:-1]), Q, self.cost_function) 
+                #vrp_route = list(filter(None, vrp_route)) 
+            
+            
+                #vrp_cost = 0 
+                #for trip in vrp_route: 
+                #    vrp_cost += calculate_route_cost(self.cost_function, trip) 
+                vrp_cost = None
+                vrp_route = None
+
                 cost = calculate_route_cost(self.cost_function, new_route[1:-1])
 
-                sum_qp = list(accumulate([q[node] for node in new_route]))
-                qp_max = max([0, max(sum_qp)])
-                qp_min = min(sum_qp)
+                qp = []
+                n_vehicles = 1
+                cost_adj = 0
+                qp_max = 0
+                qp_min = 0
+                sum_qp = 0
 
-                if qp_min > 0:
-                    qp_min = 0
+                for index, node in enumerate(new_route[1:-1], 1):
+                    if len(qp) > 0:
+                        sum_qp = sum_qp + q[node]
+                    else:
+                        sum_qp = q[node]
 
-                cost += (qp_max - qp_min)*(cost/sumq)
+                    qp.append(q[node])
 
-                swaps.append({"min": (qp_max - qp_min), "move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost})
+                    if sum_qp > qp_max:
+                        qp_max = sum_qp
+                    
+                    if sum_qp < qp_min:
+                        qp_min = sum_qp
+
+                    if qp_max - qp_min > Q:
+                        cost_adj += self.cost_function(new_route[index-1], 0) + self.cost_function(0, node)
+                        qp = [q[node]]
+                        sum_qp = q[node]
+                        qp_min = 0
+                        qp_max = 0
+                        n_vehicles += 1
+
+                #assert n_vehicles <= len(vrp_route)
+
+                cost += cost_adj
+
+                swaps.append({"move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost, "n_vehicles": n_vehicles, "vrp_cost": vrp_cost, "vrp_route": vrp_route})
 
         # order routes using the cost
-        sorte = sorted(swaps, key=lambda k: k['cost'])
+        sorte = sorted(swaps, key=itemgetter("n_vehicles", "cost"))
+
+        #if len(sorte) > 0:
+        #    mino = min(sorte, key=lambda x: x["vrp_cost"])
+        #
+        #    if mino != sorte[0]:
+        #        print(sorte.index(mino))
+        #        print("bla")
         return sorte
