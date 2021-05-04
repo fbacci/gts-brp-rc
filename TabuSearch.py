@@ -3,7 +3,7 @@ import math
 from SplitRoute import convert_tsp_to_vrp
 from TwoOpt import TwoOpt
 from ThreeOpt import ThreeOpt
-from LocalSearch import move, move_2_reverse, swap_1_1, swap_2_2, swap_1_1_1, swap_3_3_reversed, swap_3_3, last_go_first, swap_2_1
+from LocalSearch import move, move_2_reverse, swap_1_1, swap_2_2, swap_1_1_1, swap_3_3_reversed, swap_3_3, swap_2_1
 from utils import calculate_route_cost
 import bisect
 
@@ -129,7 +129,6 @@ class TabuSearch:
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
 
                 augmented = True
-                
                 
                 best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.cost_function, self.q, self.Q)
                 best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.cost_function, self.q, self.Q)
