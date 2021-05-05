@@ -1,40 +1,59 @@
-from utils import calculate_route_cost, get_cost_adj
+from utils import calculate_route_cost, get_cost_adj, get_cost_adj_partial
 from SplitRoute import convert_tsp_to_vrp
 from itertools import accumulate
+
+DEBUG_COST = False
+
+def check_cost(route, q, Q, cost_function, cost2, last_nodes2):
+    _, cost, cost_adj, last_nodes = get_cost_adj(route, q, Q, cost_function)
+    cost += cost_adj
+
+    assert cost == cost2
+    assert last_nodes == last_nodes2
 
 def move(best, cost_function, q, Q):
     best_list = []
 
     for i in range(0, len(best["route"])):
-        for j in range(0, len(best["route"])):
+        for j in range(1, len(best["route"])):
+            if i == j:
+                continue
+
             route = best["route"][:]
             del route[i]
-            route.insert(j, best["route"][i])
+            route.insert(j-1, best["route"][i])
             
-            _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
-            cost += cost_adj
+            _, cost, local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+1, j+1, best["cost"])
 
-            best_list.append({"move": None, "route": route, "cost": cost})
+            if DEBUG_COST:
+                check_cost(route, q, Q, cost_function, cost, local_last_nodes)
+
+            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
     
     return min(best_list, key = lambda x: (x["cost"]))
 
 def move_2_reverse(best, cost_function, q, Q):
     best_list = []
-
+    
     for i in range(0, len(best["route"]) -2):
-        for j in range(0, len(best["route"]) -1):
+        for j in range(1, len(best["route"]) -1):
+            if i == j:
+                continue
+
             route = best["route"][:]
 
             del route[i]  # i
             del route[i]  # i+1
 
-            route.insert(j, best["route"][i+1])
-            route.insert(j+1, best["route"][i])
-            
-            _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
-            cost += cost_adj
+            route.insert(j-1, best["route"][i+1])
+            route.insert(j, best["route"][i])
 
-            best_list.append({"move": None, "route": route, "cost": cost}) 
+            _, cost, local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+2, j+1, best["cost"])
+
+            if DEBUG_COST:
+                check_cost(route, q, Q, cost_function, cost, local_last_nodes)
+
+            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}) 
 
     return min(best_list, key = lambda x: (x["cost"]))
 
@@ -46,10 +65,12 @@ def swap_1_1(best, cost_function, q, Q):
             route = best["route"][:]
             route[i], route[j] = route[j], route[i]
             
-            _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
-            cost += cost_adj
+            _, cost, local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+1, j+1, best["cost"])
+            
+            if DEBUG_COST:
+                check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-            best_list.append({"move": None, "route": route, "cost": cost})
+            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
 
     return min(best_list, key = lambda x: (x["cost"]))
 
@@ -63,10 +84,12 @@ def swap_2_2(best, cost_function, q, Q):
             route[i:i+2]=  route[j:j+2]
             route[j:j+2] = swap
 
-            _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
-            cost += cost_adj
+            _, cost, local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+2, j+2, best["cost"])
+            
+            if DEBUG_COST:
+                check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-            best_list.append({"move": None, "route": route, "cost": cost})
+            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
 
 
     return min(best_list, key = lambda x: (x["cost"]))
@@ -81,17 +104,23 @@ def swap_1_1_1(best, cost_function, q, Q):
 
                 route[i], route[j], route[k] = route[j], route[k], route[i]
 
-                _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
-                cost += cost_adj
+                _, cost, local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], j, k, best["cost"])
+            
+                if DEBUG_COST:
+                    check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-                best_list.append({"move": None, "route": route, "cost": cost})
+                best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
                 
+                route = best["route"][:]
+
                 route[i], route[j], route[k] = route[k], route[i], route[j]
 
-                _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
-                cost += cost_adj
+                _, cost, local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], j, k, best["cost"])
+            
+                if DEBUG_COST:
+                    check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-                best_list.append({"move": None, "route": route, "cost": cost})
+                best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
     
     return min(best_list, key = lambda x: (x["cost"]))
 
@@ -105,10 +134,12 @@ def swap_3_3_reversed(best, cost_function, q, Q):
             route[i:i+3]=  route[j:j+3]
             route[j:j+3] = reversed(swap)
 
-            _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
-            cost += cost_adj
+            _, cost, local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+3, j+3, best["cost"])
+            
+            if DEBUG_COST:
+                check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-            best_list.append({"move": None, "route": route, "cost": cost})
+            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
     
     return min(best_list, key = lambda x: (x["cost"]))
 
@@ -122,10 +153,12 @@ def swap_3_3(best, cost_function, q, Q):
             route[i:i+3]=  route[j:j+3]
             route[j:j+3] = swap
 
-            _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
-            cost += cost_adj
+            _, cost, local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+3, j+3, best["cost"])
             
-            best_list.append({"move": None, "route": route, "cost": cost})
+            if DEBUG_COST:
+                check_cost(route, q, Q, cost_function, cost, local_last_nodes)
+            
+            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
 
     return min(best_list, key = lambda x: (x["cost"]))
 
@@ -141,9 +174,9 @@ def swap_2_1(best, cost_function, q, Q):
             route[i] = singleton
             route[i+1:i+2] = swap
 
-            _, cost, cost_adj = get_cost_adj(route, q, Q, cost_function)
+            _, cost, cost_adj, last_nodes = get_cost_adj(route, q, Q, cost_function)
             cost += cost_adj
 
-            best_list.append({"move": None, "route": route, "cost": cost})
+            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": last_nodes})
 
     return min(best_list, key = lambda x: (x["cost"]))

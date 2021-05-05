@@ -34,10 +34,10 @@ class TwoOpt:
                     continue 
                 new_route = self._opt_swap(route, i, j)
 
-                n_vehicles, cost, cost_adj = get_cost_adj(new_route, q, Q, self.cost_function)
+                n_vehicles, cost, cost_adj, last_nodes = get_cost_adj(new_route, q, Q, self.cost_function)
                 cost += cost_adj
 
-                swaps.append({"move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost})
+                swaps.append({"move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost, "last_nodes": last_nodes})
 
         # order routes using the cost
         sorte = sorted(swaps, key=itemgetter("cost"))

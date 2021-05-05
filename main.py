@@ -93,7 +93,7 @@ if __name__ == "__main__":
         print(100*solution["cost"]/float(result["cost"])-100)
         print(solution)
 
-        graph(solutions, result["instance"])
+        #graph(solutions, result["instance"])
 
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         print(df)
