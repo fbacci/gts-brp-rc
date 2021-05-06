@@ -1,6 +1,7 @@
 from utils import calculate_route_cost, get_cost_adj, get_cost_adj_partial
 from SplitRoute import convert_tsp_to_vrp
 from itertools import accumulate
+import math
 
 DEBUG_COST = False
 
@@ -12,7 +13,7 @@ def check_cost(route, q, Q, cost_function, cost2, last_nodes2):
     assert last_nodes == last_nodes2
 
 def move(best, cost_function, q, Q):
-    best_list = []
+    current_best = {"move": None, "route": None, "cost": math.inf, "last_nodes": None}
 
     for i in range(0, len(best["route"])):
         for j in range(1, len(best["route"])):
@@ -28,12 +29,15 @@ def move(best, cost_function, q, Q):
             if DEBUG_COST:
                 check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
+            if cost < current_best["cost"]:
+                current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
+            
+            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
     
-    return min(best_list, key = lambda x: (x["cost"]))
+    return current_best
 
 def move_2_reverse(best, cost_function, q, Q):
-    best_list = []
+    current_best = {"move": None, "route": None, "cost": math.inf, "last_nodes": None}
     
     for i in range(0, len(best["route"]) -2):
         for j in range(1, len(best["route"]) -1):
@@ -53,12 +57,15 @@ def move_2_reverse(best, cost_function, q, Q):
             if DEBUG_COST:
                 check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}) 
+            if cost < current_best["cost"]:
+                current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
 
-    return min(best_list, key = lambda x: (x["cost"]))
+            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}) 
+
+    return current_best
 
 def swap_1_1(best, cost_function, q, Q):
-    best_list = []
+    current_best = {"move": None, "route": None, "cost": math.inf, "last_nodes": None}
 
     for i in range(0, len(best["route"])):
         for j in range(i+1, len(best["route"])):
@@ -70,12 +77,14 @@ def swap_1_1(best, cost_function, q, Q):
             if DEBUG_COST:
                 check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
+            if cost < current_best["cost"]:
+                current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
+            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
 
-    return min(best_list, key = lambda x: (x["cost"]))
+    return current_best
 
 def swap_2_2(best, cost_function, q, Q):
-    best_list = []
+    current_best = {"move": None, "route": None, "cost": math.inf, "last_nodes": None}
 
     for i in range(0, len(best["route"])):
         for j in range(2+i, len(best["route"])-1):
@@ -89,10 +98,12 @@ def swap_2_2(best, cost_function, q, Q):
             if DEBUG_COST:
                 check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
+            if cost < current_best["cost"]:
+                current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
+            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
 
 
-    return min(best_list, key = lambda x: (x["cost"]))
+    return current_best
 
 def swap_1_1_1(best, cost_function, q, Q):
     best_list = []
@@ -125,7 +136,7 @@ def swap_1_1_1(best, cost_function, q, Q):
     return min(best_list, key = lambda x: (x["cost"]))
 
 def swap_3_3_reversed(best, cost_function, q, Q):
-    best_list = []
+    current_best = {"move": None, "route": None, "cost": math.inf, "last_nodes": None}
 
     for i in range(0, len(best["route"])):
         for j in range(3+i, len(best["route"])-2):
@@ -139,12 +150,14 @@ def swap_3_3_reversed(best, cost_function, q, Q):
             if DEBUG_COST:
                 check_cost(route, q, Q, cost_function, cost, local_last_nodes)
 
-            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
+            if cost < current_best["cost"]:
+                current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
+            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
     
-    return min(best_list, key = lambda x: (x["cost"]))
+    return current_best
 
 def swap_3_3(best, cost_function, q, Q):
-    best_list = []
+    current_best = {"move": None, "route": None, "cost": math.inf, "last_nodes": None}
 
     for i in range(0, len(best["route"])):
         for j in range(3+i, len(best["route"])-2):
@@ -158,9 +171,11 @@ def swap_3_3(best, cost_function, q, Q):
             if DEBUG_COST:
                 check_cost(route, q, Q, cost_function, cost, local_last_nodes)
             
-            best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
+            if cost < current_best["cost"]:
+                current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
+            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
 
-    return min(best_list, key = lambda x: (x["cost"]))
+    return current_best
 
 def swap_2_1(best, cost_function, q, Q):
     best_list = []
