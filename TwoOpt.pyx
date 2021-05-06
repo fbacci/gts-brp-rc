@@ -13,15 +13,19 @@ class TwoOpt:
         """
         self.cost_function = cost_function
 
-    def _opt_swap(self, route, i, k):
+    def _opt_swap(self, route, int i, int k):
+        cdef list route_to_i
+        cdef list route_to_k
+        cdef list route_to_end
+
         route_to_i = route[:i]
         route_to_k = list(reversed(route[i:k]))
         route_to_end = route[k:]
 
         return route_to_i + route_to_k + route_to_end
 
-    def start(self, route, A, tabu_list, q, Q):
-        swaps = []
+    def start(self, list route, set A, tabu_list, list q, int Q):
+        cdef list swaps = []
 
         route = [0]+route+[0]
 
@@ -40,6 +44,4 @@ class TwoOpt:
                 swaps.append({"move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost, "last_nodes": last_nodes})
 
         # order routes using the cost
-        sorte = sorted(swaps, key=itemgetter("cost"))
-
-        return sorte
+        return sorted(swaps, key=itemgetter("cost"))

@@ -1,21 +1,23 @@
 from itertools import islice
 
-def calculate_route_cost(cost_function, route):
+cpdef float calculate_route_cost(cost_function, list route):
     """
     Calculate cost of a route
     """
 
     # Add cost of the delimiters
-    cost = cost_function(0, route[0]) + cost_function(route[-1], 0)
+    cdef float cost = cost_function(0, route[0]) + cost_function(route[-1], 0)
+    cdef int node
+    cdef int next_node
 
     for node, next_node in zip(route, islice(route, 1, None)):
         cost += cost_function(node, next_node)
 
     return cost
 
-def get_cost_adj_partial(new_route, q, Q, cost_function, last_nodes, i, j, old_cost):
-    n_vehicles = 1
-    local_last_nodes = dict()
+def get_cost_adj_partial(list new_route, list q, int Q, cost_function, dict last_nodes, int i, int j, float old_cost):
+    cdef int n_vehicles = 1
+    cdef dict local_last_nodes = dict()
 
     if new_route[0] != 0:
         new_route = [0] + new_route
@@ -23,12 +25,15 @@ def get_cost_adj_partial(new_route, q, Q, cost_function, last_nodes, i, j, old_c
     if new_route[-1] != 0:
         new_route = new_route + [0]
 
-    cost = cost_function(new_route[-2], 0)
-    qp_max = 0
-    qp_min = 0
-    sum_qp = 0
+    cdef float cost = cost_function(new_route[-2], 0)
+    cdef int qp_max = 0
+    cdef int qp_min = 0
+    cdef int sum_qp = 0
 
-    first_run = True
+    cdef bint first_run = True
+
+    cdef int index
+    cdef int node
 
     for index, node in enumerate(new_route[1:-1], 1):
         if first_run:
@@ -80,10 +85,9 @@ def get_cost_adj_partial(new_route, q, Q, cost_function, last_nodes, i, j, old_c
 
     return n_vehicles, cost, local_last_nodes
 
-
-def get_cost_adj(new_route, q, Q, cost_function, test=0):
-    n_vehicles = 1
-    last_nodes = dict()
+def get_cost_adj(list new_route, list q, int Q, cost_function):
+    cdef int n_vehicles = 1
+    cdef dict last_nodes = dict()
 
     if new_route[0] != 0:
         new_route = [0] + new_route
@@ -91,13 +95,15 @@ def get_cost_adj(new_route, q, Q, cost_function, test=0):
     if new_route[-1] != 0:
         new_route = new_route + [0]
 
-    cost_adj = 0
-    cost = cost_function(new_route[-2], 0)
-    qp_max = 0
-    qp_min = 0
-    sum_qp = 0
+    cdef float cost_adj = 0
+    cdef float cost = cost_function(new_route[-2], 0)
+    cdef int qp_max = 0
+    cdef int qp_min = 0
+    cdef int sum_qp = 0
 
-    first_run = True
+    cdef bint first_run = True
+    cdef int index
+    cdef int node
 
     for index, node in enumerate(new_route[1:-1], 1):
         if first_run:
