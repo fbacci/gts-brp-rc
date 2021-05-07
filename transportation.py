@@ -49,7 +49,7 @@ def solve_transportation_problem(N, n, c, q):
     A = []
 
     #split nodes in supply (source) and deficit(target)
-    target, source = build_target_source(N, n, q)
+    target, source = build_target_source(N, n, q[:])
 
     for (t, _) in target:
         for(s, _) in source:

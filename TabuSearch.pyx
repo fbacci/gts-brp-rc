@@ -3,8 +3,11 @@ import math
 from SplitRoute import convert_tsp_to_vrp
 from TwoOpt import TwoOpt
 from ThreeOpt import ThreeOpt
+from LocalSearch import move, move_2_reverse, swap_1_1, swap_2_2, swap_3_3_reversed, swap_3_3
 from utils import calculate_route_cost
 import bisect
+
+ctypedef float (*ftype)(int, int)
 
 class TabuSearch:
     """
@@ -54,14 +57,14 @@ class TabuSearch:
             self.A.add((0, node))
             self.A.add((node, 0))
 
-    def granular(self, N, max_cost):
+    def granular(self, list N, float max_cost):
         """
         Parameters:
             N: nodes without deposit
             max_cost: max reduced cost to consider
         """
 
-        A = set(self.A)
+        cdef set A = set(self.A)
 
         index_last_reduced_cost = bisect.bisect_right(self.reduced_costs_costs, max_cost)
 
@@ -70,7 +73,7 @@ class TabuSearch:
 
         return A
 
-    def start(self, initial_cost):
+    def start(self, float initial_cost):
         """
         Start the tabu search
 
@@ -78,40 +81,53 @@ class TabuSearch:
             initial_cost: initial solution cost
         """
 
-        iteration_number_max = 20
-        tenure_increment = 10
-        percentage_increment = 0.8
-        percentage_decrement = 0.9
+        cdef int iteration_number_max = 18
+        cdef int tenure_increment = 7
+        cdef float percentage_increment = 0.1
+        cdef float percentage_decrement = 0.2
+
+        cdef list trip
 
         tabu_list = collections.deque(maxlen=self.tenure)
-        route = self.initial_solution
-        best_route = {"route": self.initial_solution, "cost": initial_cost}
-        best_tsp_route = self.initial_solution
+        cdef list route = self.initial_solution
+        cdef dict best_route = {"route": self.initial_solution, "cost": initial_cost}
+        cdef dict best_tsp_route = {"route": self.initial_solution, "cost": initial_cost}
+        cdef dict best_valid_neighborhood = {"move": None, "route": self.initial_solution, "cost": initial_cost}
 
-        it_count = 0
-        best_count = 0
+        cdef int it_count = 0
+        cdef int best_count = 0
 
-        A = None
-        min_cost = self.reduced_costs_costs[0]
-        max_cost = min_cost
+        cdef set A = None
+        cdef float min_cost = self.reduced_costs_costs[0]
+        cdef float max_cost = min_cost
 
-        max_reduced_cost = self.reduced_costs_costs[-1]
+        cdef float max_reduced_cost = self.reduced_costs_costs[-1]
 
         A = self.granular(self.N, max_cost)
 
         opt = TwoOpt(self.cost_function)
 
-        solutions = [{"iteration": -1, "f obj": initial_cost, "best": True}]
+        cdef list solutions = [{"iteration": -1, "f obj": initial_cost, "best": True}]
+
+        cdef bint augment
+        cdef list two_opt_neighborhoods
+
+        cdef list vrp_route
+        cdef float vrp_cost
 
         # stop condition
         while self.iterations-it_count > 0:
+            augmented = False
             if max_cost >= max_reduced_cost:
                 #print("Max cost")
+                
                 break
-            if best_count == iteration_number_max:
+            if best_count >= iteration_number_max:
                 # after iteration_number_max iterations without best solution, augment the granularity
                 max_cost = max_cost + abs(max_cost*percentage_increment)
+
                 A = self.granular(self.N, max_cost)
+
                 best_count = 0
                 
                 # if the number is near 0 we can't increment it using percentages
@@ -119,12 +135,24 @@ class TabuSearch:
                     max_cost = 1000
 
                 self.tenure += tenure_increment
+                
                 tabu_list = collections.deque(tabu_list, maxlen=self.tenure)
 
-            two_opt_neighborhoods = opt.start(route, A, tabu_list)
+                augmented = True
+                
+                best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.q, self.Q, self.cost_function)
+                best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.q, self.Q, self.cost_function)
+                best_valid_neighborhood = swap_3_3(best_valid_neighborhood, self.q, self.Q, self.cost_function)
+                best_valid_neighborhood = swap_2_2(best_valid_neighborhood, self.q, self.Q, self.cost_function)
+                best_valid_neighborhood = swap_1_1(best_valid_neighborhood, self.q, self.Q, self.cost_function)
+                best_valid_neighborhood = move(best_valid_neighborhood, self.q, self.Q, self.cost_function)
 
-            if len(two_opt_neighborhoods) != 0:
-                best_valid_neighborhood = two_opt_neighborhoods[0]
+            two_opt_neighborhoods = opt.start(route, A, tabu_list, self.q, self.Q)
+
+            if len(two_opt_neighborhoods) != 0 or augmented:
+                if not augmented:
+                    best_valid_neighborhood = two_opt_neighborhoods[0]
+                    augmented = False
 
                 tabu_list.append(best_valid_neighborhood["move"])
 
@@ -147,7 +175,7 @@ class TabuSearch:
                     best_route["route"] = vrp_route
                     best_route["cost"] = vrp_cost
                     route = best_valid_neighborhood["route"]
-                    best_tsp_route = best_valid_neighborhood["route"]
+                    best_tsp_route = {"route": best_valid_neighborhood["route"], "cost": best_valid_neighborhood["cost"]}
                     best_count = 0
 
                     # decrease granularity

@@ -3,7 +3,7 @@ from utils import calculate_route_cost
 class ThreeOpt:
     def __init__(self, cost_function):
         """
-        A simple 2-Opt class
+        A simple 3-Opt class
 
             Parameters:
                 cost_function: a function which calculate the cost between two nodes
