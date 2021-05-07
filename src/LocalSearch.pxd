@@ -1,0 +1,6 @@
+cdef dict move(dict best, list q, int Q, cost_function)
+cdef dict move_2_reverse(dict best, list q, int Q, cost_function)
+cdef dict swap_1_1(dict best, list q, int Q, cost_function)
+cdef dict swap_2_2(dict best, list q, int Q, cost_function)
+cdef dict swap_3_3_reversed(dict best, list q, int Q, cost_function)
+cdef dict swap_3_3(dict best, list q, int Q, cost_function)

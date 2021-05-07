@@ -1,15 +1,13 @@
 import collections
 import math
 from SplitRoute import convert_tsp_to_vrp
-from TwoOpt import TwoOpt
+from TwoOpt cimport TwoOpt
 from ThreeOpt import ThreeOpt
-from LocalSearch import move, move_2_reverse, swap_1_1, swap_2_2, swap_3_3_reversed, swap_3_3
+from LocalSearch cimport move, move_2_reverse, swap_1_1, swap_2_2, swap_3_3_reversed, swap_3_3
 from utils import calculate_route_cost
 import bisect
 
-ctypedef float (*ftype)(int, int)
-
-class TabuSearch:
+cdef class TabuSearch:
     """
         A simple Tabu Search class
 
@@ -57,7 +55,7 @@ class TabuSearch:
             self.A.add((0, node))
             self.A.add((node, 0))
 
-    def granular(self, list N, float max_cost):
+    cdef set granular(self, list N, float max_cost):
         """
         Parameters:
             N: nodes without deposit
@@ -73,7 +71,7 @@ class TabuSearch:
 
         return A
 
-    def start(self, float initial_cost):
+    cpdef dict start(self, float initial_cost):
         """
         Start the tabu search
 
@@ -201,4 +199,5 @@ class TabuSearch:
                 best_count = iteration_number_max
 
             it_count += 1
-        return best_route, solutions
+        return best_route
+        #, solutions

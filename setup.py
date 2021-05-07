@@ -7,10 +7,10 @@ from Cython.Build import cythonize
 
 
 extensions = [
-    Extension("utils", ["src/utils.pyx"]),
-    Extension("LocalSearch", ["src/LocalSearch.pyx"]),
-    Extension("TabuSearch", ["src/TabuSearch.pyx"]),
-    Extension("TwoOpt", ["src/TwoOpt.pyx"]),
+    Extension(name="utils", sources=["src/utils.pyx"], extra_compile_args=["-O3"]),
+    Extension(name="LocalSearch", sources=["src/LocalSearch.pyx"], extra_compile_args=["-O3"]),
+    Extension(name="TabuSearch", sources=["src/TabuSearch.pyx"], extra_compile_args=["-O3"]),
+    Extension(name="TwoOpt", sources=["src/TwoOpt.pyx"], extra_compile_args=["-O3"]),
 ]
 
 

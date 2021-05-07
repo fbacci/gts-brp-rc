@@ -28,19 +28,19 @@ def graph(solutions, dataset):
     fobjplot = sns.lineplot(x = "iteration", y = "f obj", data=data_plot, markevery=[i for i, solution in enumerate(solutions) if solution["best"] == True], marker="o", ms=5, markerfacecolor='red')
 
     fig = fobjplot.get_figure()
-    fig.savefig("../graphs/" + dataset + ".png")
+    fig.savefig("graphs/" + dataset + ".png")
     fig.clf() 
 
 if __name__ == "__main__":
     df = pd.DataFrame(columns=['Instance', 'Our obj', 'Paper Obj', 'Our Time', 'Paper Time', 'GAP'])
 
-    results_file = open("../dataset/results.txt", "r").read().split('\n')
+    results_file = open("dataset/results.txt", "r").read().split('\n')
     results = utils.open_results(results_file)
 
     for result in results:
         print(result["instance"])
         # read dataset
-        n, c, q, Q  = utils.open_dataset("../dataset/" + result["instance"])
+        n, c, q, Q  = utils.open_dataset("dataset/" + result["instance"])
 
         def cost_function(from_node, to_node):
             return c[from_node, to_node]
@@ -84,7 +84,8 @@ if __name__ == "__main__":
         # tabu search
         ts = TabuSearch(routes_filtered, reduced_costs_arcs, reduced_costs_costs, 500, 15, cost_function, q, Q, N)
         start_time = time.time()
-        solution, solutions = ts.start(total_cost)
+        solution = ts.start(total_cost)
+        #solution, solutions = ts.start(total_cost)
         end_time = time.time() - start_time
 
         new_value = new_value = {'Instance': result["instance"], 'Paper Obj': result["cost"], 'Our obj': solution["cost"], 'Paper Time': result["time"], 'Our Time': float("{:.2f}".format(end_time)), 'GAP': float("{:.2f}".format(100*solution["cost"]/float(result["cost"])-100))}
@@ -93,7 +94,7 @@ if __name__ == "__main__":
         print(100*solution["cost"]/float(result["cost"])-100)
         print(solution)
 
-        graph(solutions, result["instance"])
+        #graph(solutions, result["instance"])
 
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         print(df)

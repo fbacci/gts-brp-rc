@@ -5,8 +5,6 @@ import math
 
 cdef bint DEBUG_COST = False
 
-ctypedef float (*ftype)(int, int)
-
 cdef void check_cost(list route, list q, int Q, float cost2, dict last_nodes2, cost_function):
     cdef float cost
     cdef float cost_adj
@@ -18,7 +16,7 @@ cdef void check_cost(list route, list q, int Q, float cost2, dict last_nodes2, c
     assert cost == cost2
     assert last_nodes == last_nodes2
 
-cpdef dict move(dict best, list q, int Q, cost_function):
+cdef dict move(dict best, list q, int Q, cost_function):
     cdef int i
     cdef int j
     cdef list route
@@ -42,12 +40,10 @@ cpdef dict move(dict best, list q, int Q, cost_function):
 
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
-            
-            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
     
     return current_best
 
-cpdef dict move_2_reverse(dict best, list q, int Q, cost_function):
+cdef dict move_2_reverse(dict best, list q, int Q, cost_function):
     cdef dict current_best = {"move": None, "route": None, "cost": math.inf, "last_nodes": None}
     cdef int i
     cdef int j
@@ -76,11 +72,9 @@ cpdef dict move_2_reverse(dict best, list q, int Q, cost_function):
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
 
-            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}) 
-
     return current_best
 
-cpdef dict swap_1_1(dict best, list q, int Q, cost_function):
+cdef dict swap_1_1(dict best, list q, int Q, cost_function):
     cdef int i
     cdef int j
     cdef list route
@@ -100,11 +94,10 @@ cpdef dict swap_1_1(dict best, list q, int Q, cost_function):
 
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
-            #best_list.append({"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes})
 
     return current_best
 
-cpdef dict swap_2_2(dict best, list q, int Q, cost_function):
+cdef dict swap_2_2(dict best, list q, int Q, cost_function):
     cdef int i
     cdef int j
     cdef list route
@@ -132,7 +125,7 @@ cpdef dict swap_2_2(dict best, list q, int Q, cost_function):
 
     return current_best
 
-cpdef dict swap_3_3_reversed(dict best, list q, int Q, cost_function):
+cdef dict swap_3_3_reversed(dict best, list q, int Q, cost_function):
     cdef int i
     cdef int j
     cdef list route
@@ -159,7 +152,7 @@ cpdef dict swap_3_3_reversed(dict best, list q, int Q, cost_function):
     
     return current_best
 
-cpdef dict swap_3_3(dict best, list q, int Q, cost_function):
+cdef dict swap_3_3(dict best, list q, int Q, cost_function):
     cdef int i
     cdef int j
     cdef list route

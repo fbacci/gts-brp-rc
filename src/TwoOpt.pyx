@@ -3,7 +3,7 @@ from itertools import accumulate
 from SplitRoute import convert_tsp_to_vrp
 from operator import itemgetter
 
-class TwoOpt:
+cdef class TwoOpt:
     def __init__(self, cost_function):
         """
         A simple 2-Opt class
@@ -13,18 +13,10 @@ class TwoOpt:
         """
         self.cost_function = cost_function
 
-    def _opt_swap(self, route, int i, int k):
-        cdef list route_to_i
-        cdef list route_to_k
-        cdef list route_to_end
+    cdef list _opt_swap(self, list route, int i, int k):
+        return route[:i] + list(reversed(route[i:k])) + route[k:]
 
-        route_to_i = route[:i]
-        route_to_k = list(reversed(route[i:k]))
-        route_to_end = route[k:]
-
-        return route_to_i + route_to_k + route_to_end
-
-    def start(self, list route, set A, tabu_list, list q, int Q):
+    cdef list start(self, list route, set A, tabu_list, list q, int Q):
         cdef list swaps = []
 
         route = [0]+route+[0]
