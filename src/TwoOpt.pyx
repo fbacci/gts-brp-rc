@@ -1,6 +1,6 @@
-from utils import calculate_route_cost, get_cost_adj
+from utils cimport calculate_route_cost, get_cost_adj
 from itertools import accumulate
-from SplitRoute import convert_tsp_to_vrp
+from SplitRoute cimport convert_tsp_to_vrp
 from operator import itemgetter
 
 cdef class TwoOpt:
@@ -18,6 +18,7 @@ cdef class TwoOpt:
 
     cdef list start(self, list route, set A, tabu_list, list q, int Q):
         cdef list swaps = []
+        cdef float cost = 0
 
         route = [0]+route+[0]
 
@@ -30,8 +31,7 @@ cdef class TwoOpt:
                     continue 
                 new_route = self._opt_swap(route, i, j)
 
-                n_vehicles, cost, cost_adj, last_nodes = get_cost_adj(new_route, q, Q, self.cost_function)
-                cost += cost_adj
+                last_nodes = get_cost_adj(new_route, q, Q, self.cost_function, &cost)
 
                 swaps.append({"move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost, "last_nodes": last_nodes})
 

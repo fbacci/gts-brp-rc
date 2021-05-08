@@ -1,10 +1,9 @@
 import collections
 import math
-from SplitRoute import convert_tsp_to_vrp
+from SplitRoute cimport convert_tsp_to_vrp
 from TwoOpt cimport TwoOpt
-from ThreeOpt import ThreeOpt
 from LocalSearch cimport move, move_2_reverse, swap_1_1, swap_2_2, swap_3_3_reversed, swap_3_3
-from utils import calculate_route_cost
+from utils cimport calculate_route_cost
 import bisect
 
 cdef class TabuSearch:
