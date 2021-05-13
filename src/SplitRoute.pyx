@@ -1,6 +1,6 @@
 import math
 
-cdef list split(list S, list q, int n, int W, list d, float L, cost_function):
+cdef list split(list S, list q, int n, int W, list d, float L, dict costs):
     """
         Parameters:
             S: TSP route to convert
@@ -9,7 +9,7 @@ cdef list split(list S, list q, int n, int W, list d, float L, cost_function):
             W: capacity of vehicle
             d: cost to visit a node (0 if vrp)
             L: maximum route cost (infinity inf vrp)
-            cost_function: a function which calculate the cost between two nodes
+            costs: costs dict
     """
 
     cdef int i
@@ -57,9 +57,9 @@ cdef list split(list S, list q, int n, int W, list d, float L, cost_function):
                 qp_min = 0
 
             if i == j:
-                cost = cost_function(0, S[j]) + d[S[j]] + cost_function(S[j], 0)
+                cost = costs[0, S[j]] + d[S[j]] + costs[S[j], 0]
             else:
-                cost = cost - cost_function(S[j-1], 0) + cost_function(S[j-1], S[j]) + d[S[j]] + cost_function(S[j], 0)
+                cost = cost - costs[S[j-1], 0] + costs[S[j-1], S[j]] + d[S[j]] + costs[S[j], 0]
 
             if (cost <= L) and (qp_max - qp_min <= W):
                 if V[i-1]+cost < V[j]:
@@ -97,14 +97,14 @@ cdef list extract_vrp(int n, list S, list P):
 
     return trip
 
-cdef list convert_tsp_to_vrp(list S, list q, int n, int W, cost_function):
+cdef list convert_tsp_to_vrp(list S, list q, int n, int W, dict costs):
     """
         Parameters:
             S: TSP route to convert
             q: demand at nodes
             n: number of nodes
             W: capacity of vehicle
-            cost_function: a function which calculate the cost between two nodes
+            costs: cost dict
             d: cost to visit a node (0 if vrp)
             L: maximum route cost (infinity inf vrp)
     """
@@ -116,6 +116,6 @@ cdef list convert_tsp_to_vrp(list S, list q, int n, int W, cost_function):
     if d is None:
         d = [0 for _ in range(n+1)]
 
-    P = split([0]+S, q, n, W, d, L, cost_function)
+    P = split([0]+S, q, n, W, d, L, costs)
 
     return extract_vrp(n, [0]+S, P)

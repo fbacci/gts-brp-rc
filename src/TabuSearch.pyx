@@ -15,12 +15,12 @@ cdef class TabuSearch:
             reduced_costs: ordered by cost reduced cost of transport problem
             iterations: max number of iterations
             tenure: maximum number of iterations of permanence of a move in the tabu list
-            cost_function: a function which calculate the cost between two nodes
+            costs: cost dict
             q: demand at nodes
             Q: capacity vehicles
             N: nodes without deposit
     """
-    def __init__(self, initial_solution, reduced_costs_arcs, reduced_costs_costs, iterations, tenure, cost_function, q, Q, N):
+    def __init__(self, initial_solution, reduced_costs_arcs, reduced_costs_costs, iterations, tenure, costs, q, Q, N):
         """
         Construct a Tabu Search Object
 
@@ -30,7 +30,7 @@ cdef class TabuSearch:
                 reduced_costs_costs: cost ordered by reduced cost of transport problem
                 iterations: max number of iterations
                 tenure: maximum number of iterations of permanence of a move in the tabu list
-                cost_function: a function which calculate the cost between two nodes
+                costs: cost dict
                 q: demand at nodes
                 Q: capacity vehicles
                 N: nodes without deposit
@@ -40,7 +40,7 @@ cdef class TabuSearch:
         self.reduced_costs_costs = reduced_costs_costs
         self.iterations = iterations
         self.tenure = tenure
-        self.cost_function = cost_function
+        self.costs = costs
         self.q = q
         self.Q = Q
         self.N = N
@@ -102,7 +102,7 @@ cdef class TabuSearch:
 
         A = self.granular(self.N, max_cost)
 
-        opt = TwoOpt(self.cost_function)
+        opt = TwoOpt(self.costs)
 
         cdef list solutions = [{"iteration": -1, "f obj": initial_cost, "best": True}]
 
@@ -137,12 +137,12 @@ cdef class TabuSearch:
 
                 augmented = True
                 
-                best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.q, self.Q, self.cost_function)
-                best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.q, self.Q, self.cost_function)
-                best_valid_neighborhood = swap_3_3(best_valid_neighborhood, self.q, self.Q, self.cost_function)
-                best_valid_neighborhood = swap_2_2(best_valid_neighborhood, self.q, self.Q, self.cost_function)
-                best_valid_neighborhood = swap_1_1(best_valid_neighborhood, self.q, self.Q, self.cost_function)
-                best_valid_neighborhood = move(best_valid_neighborhood, self.q, self.Q, self.cost_function)
+                best_valid_neighborhood = move_2_reverse(best_valid_neighborhood, self.q, self.Q, self.costs)
+                best_valid_neighborhood = swap_3_3_reversed(best_valid_neighborhood, self.q, self.Q, self.costs)
+                best_valid_neighborhood = swap_3_3(best_valid_neighborhood, self.q, self.Q, self.costs)
+                best_valid_neighborhood = swap_2_2(best_valid_neighborhood, self.q, self.Q, self.costs)
+                best_valid_neighborhood = swap_1_1(best_valid_neighborhood, self.q, self.Q, self.costs)
+                best_valid_neighborhood = move(best_valid_neighborhood, self.q, self.Q, self.costs)
 
             two_opt_neighborhoods = opt.start(route, A, tabu_list, self.q, self.Q)
 
@@ -154,12 +154,12 @@ cdef class TabuSearch:
                 tabu_list.append(best_valid_neighborhood["move"])
 
                 # create a feasible route for VRP
-                vrp_route = convert_tsp_to_vrp(best_valid_neighborhood["route"], self.q, len(best_valid_neighborhood["route"]), self.Q, self.cost_function)
+                vrp_route = convert_tsp_to_vrp(best_valid_neighborhood["route"], self.q, len(best_valid_neighborhood["route"]), self.Q, self.costs)
                 vrp_route = list(filter(None, vrp_route))
 
                 vrp_cost = 0
                 for trip in vrp_route:
-                    vrp_cost += calculate_route_cost(self.cost_function, trip)
+                    vrp_cost += calculate_route_cost(self.costs, trip)
 
                     if vrp_cost > best_route["cost"]:
                         break

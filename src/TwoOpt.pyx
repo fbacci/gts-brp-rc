@@ -4,14 +4,14 @@ from SplitRoute cimport convert_tsp_to_vrp
 from operator import itemgetter
 
 cdef class TwoOpt:
-    def __init__(self, cost_function):
+    def __init__(self, costs):
         """
         A simple 2-Opt class
 
             Parameters:
-                cost_function: a function which calculate the cost between two nodes
+                costs: cost dict
         """
-        self.cost_function = cost_function
+        self.costs = costs
 
     cdef list _opt_swap(self, list route, int i, int k):
         return route[:i] + list(reversed(route[i:k])) + route[k:]
@@ -31,7 +31,7 @@ cdef class TwoOpt:
                     continue 
                 new_route = self._opt_swap(route, i, j)
 
-                last_nodes = get_cost_adj(new_route, q, Q, self.cost_function, &cost)
+                last_nodes = get_cost_adj(new_route, q, Q, self.costs, &cost)
 
                 swaps.append({"move": (route[i], route[j]), "route": new_route[1:-1], "cost": cost, "last_nodes": last_nodes})
 

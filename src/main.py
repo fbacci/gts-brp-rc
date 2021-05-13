@@ -55,7 +55,7 @@ if __name__ == "__main__":
         total_cost = 0
         
         for route in routes:
-            total_cost += calculate_route_cost(cost_function, route[1:-1])
+            total_cost += calculate_route_cost(c, route[1:-1])
 
         # convert vrp route to tsp route
         routes_flattened = [node for route in routes for node in route]
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         reduced_costs_costs = [v for k,v in {k: v for k, v in sorted(reduced_costs_matrix.items(), key=lambda item: item[1])}.items()]
 
         # tabu search
-        ts = TabuSearch(routes_filtered, reduced_costs_arcs, reduced_costs_costs, 500, 15, cost_function, q, Q, N)
+        ts = TabuSearch(routes_filtered, reduced_costs_arcs, reduced_costs_costs, 500, 15, c, q, Q, N)
         start_time = time.time()
         solution = ts.start(total_cost)
         #solution, solutions = ts.start(total_cost)

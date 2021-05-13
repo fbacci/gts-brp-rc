@@ -15,7 +15,7 @@ extensions = [
 ]
 
 
-compiler_directives = {"language_level": 3, "embedsignature": True, 'profile': False}
+compiler_directives = {"language_level": 3, "embedsignature": True, 'profile': False, 'boundscheck': False}
 extensions = cythonize(extensions, compiler_directives=compiler_directives,  build_dir="build")
 
 

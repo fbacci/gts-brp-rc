@@ -1,21 +1,21 @@
 from itertools import islice
 
-cpdef float calculate_route_cost(cost_function, list route):
+cpdef float calculate_route_cost(dict costs, list route):
     """
     Calculate cost of a route
     """
 
     # Add cost of the delimiters
-    cdef float cost = cost_function(0, route[0]) + cost_function(route[-1], 0)
+    cdef float cost = costs[0, route[0]] + costs[route[-1], 0]
     cdef int node
     cdef int next_node
 
     for node, next_node in zip(route, islice(route, 1, None)):
-        cost += cost_function(node, next_node)
+        cost += costs[node, next_node]
 
     return cost
 
-cdef dict get_cost_adj_partial(list new_route, list q, int Q, cost_function, dict last_nodes, int i, int j, float *old_cost):
+cdef dict get_cost_adj_partial(list new_route, list q, int Q, dict costs, dict last_nodes, int i, int j, float *old_cost):
     cdef int n_vehicles = 1
     cdef dict local_last_nodes = dict()
 
@@ -25,7 +25,7 @@ cdef dict get_cost_adj_partial(list new_route, list q, int Q, cost_function, dic
     if new_route[-1] != 0:
         new_route = new_route + [0]
 
-    cdef float cost = cost_function(new_route[-2], 0)
+    cdef float cost = costs[new_route[-2], 0]
     cdef int qp_max = 0
     cdef int qp_min = 0
     cdef int sum_qp = 0
@@ -43,7 +43,7 @@ cdef dict get_cost_adj_partial(list new_route, list q, int Q, cost_function, dic
         else:
             sum_qp = sum_qp + q[node]
         
-        cost += cost_function(new_route[index-1], node)
+        cost += costs[new_route[index-1], node]
 
         if sum_qp > qp_max:
             qp_max = sum_qp
@@ -55,10 +55,10 @@ cdef dict get_cost_adj_partial(list new_route, list q, int Q, cost_function, dic
             # return to depot
 
             # calculate return to depot cost
-            cost -= cost_function(new_route[index-1], node) 
-            cost += cost_function(new_route[index-1], 0) + cost_function(0, node)
+            cost -= costs[new_route[index-1], node]
+            cost += costs[new_route[index-1], 0] + costs[0, node]
 
-            local_last_nodes[new_route[index-1]] = cost - cost_function(new_route[-2], 0) - cost_function(0, node)
+            local_last_nodes[new_route[index-1]] = cost - costs[new_route[-2], 0] - costs[0, node]
 
             # reset
             sum_qp = q[node]
@@ -68,8 +68,8 @@ cdef dict get_cost_adj_partial(list new_route, list q, int Q, cost_function, dic
 
             if index-1 > i and index-1 > j and new_route[index-1] in last_nodes:
                 cost = cost + old_cost[0] - last_nodes.get(new_route[index-1])
-                cost -= cost_function(0, node)
-                cost -= cost_function(new_route[-2], 0)
+                cost -= costs[0, node]
+                cost -= costs[new_route[-2], 0]
 
                 last_nodes_list = list(last_nodes.items())
 
@@ -86,7 +86,7 @@ cdef dict get_cost_adj_partial(list new_route, list q, int Q, cost_function, dic
     old_cost[0] = cost
     return local_last_nodes
 
-cdef dict get_cost_adj(list new_route, list q, int Q, cost_function, float *cost):
+cdef dict get_cost_adj(list new_route, list q, int Q, dict costs, float *cost):
     cdef int n_vehicles = 1
     cdef dict last_nodes = dict()
 
@@ -105,7 +105,7 @@ cdef dict get_cost_adj(list new_route, list q, int Q, cost_function, float *cost
     cdef int index
     cdef int node
 
-    cost[0] = cost_function(new_route[-2], 0)
+    cost[0] = costs[new_route[-2], 0]
 
     for index, node in enumerate(new_route[1:-1], 1):
         if first_run:
@@ -115,7 +115,7 @@ cdef dict get_cost_adj(list new_route, list q, int Q, cost_function, float *cost
         else:
             sum_qp = sum_qp + q[node]
             
-        cost[0] += cost_function(new_route[index-1], node)
+        cost[0] += costs[new_route[index-1], node]
 
         if sum_qp > qp_max:
             qp_max = sum_qp
@@ -127,11 +127,11 @@ cdef dict get_cost_adj(list new_route, list q, int Q, cost_function, float *cost
             # return to depot
 
             # calculate return to depot cost
-            cost_adj += cost_function(new_route[index-1], 0) + cost_function(0, node)
+            cost_adj += costs[new_route[index-1], 0] + costs[0, node]
 
-            cost[0] -= cost_function(new_route[index-1], node)
+            cost[0] -= costs[new_route[index-1], node]
 
-            last_nodes[new_route[index-1]] = cost[0] + cost_adj - cost_function(new_route[-2], 0) - cost_function(0, node)
+            last_nodes[new_route[index-1]] = cost[0] + cost_adj - costs[new_route[-2], 0]- costs[0, node]
 
             # reset
             sum_qp = q[node]

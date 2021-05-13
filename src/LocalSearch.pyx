@@ -5,16 +5,16 @@ import math
 
 cdef bint DEBUG_COST = False
 
-cdef void check_cost(list route, list q, int Q, float cost2, dict last_nodes2, cost_function):
+cdef void check_cost(list route, list q, int Q, float cost2, dict last_nodes2, dict costs):
     cdef float cost = 0
     cdef dict last_nodes
 
-    last_nodes = get_cost_adj(route, q, Q, cost_function, &cost)
+    last_nodes = get_cost_adj(route, q, Q, costs, &cost)
 
     assert cost == cost2
     assert last_nodes == last_nodes2
 
-cdef dict move(dict best, list q, int Q, cost_function):
+cdef dict move(dict best, list q, int Q, dict costs):
     cdef int i
     cdef int j
     cdef list route
@@ -33,17 +33,17 @@ cdef dict move(dict best, list q, int Q, cost_function):
             
             cost = best["cost"]
             
-            local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+1, j+1, &cost)
+            local_last_nodes = get_cost_adj_partial(route, q, Q, costs, best["last_nodes"], i+1, j+1, &cost)
 
             if DEBUG_COST:
-                check_cost(route, q, Q, cost, local_last_nodes, cost_function)
+                check_cost(route, q, Q, cost, local_last_nodes, costs)
 
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
     
     return current_best
 
-cdef dict move_2_reverse(dict best, list q, int Q, cost_function):
+cdef dict move_2_reverse(dict best, list q, int Q, dict costs):
     cdef dict current_best = {"move": None, "route": None, "cost": math.inf, "last_nodes": None}
     cdef int i
     cdef int j
@@ -66,17 +66,17 @@ cdef dict move_2_reverse(dict best, list q, int Q, cost_function):
 
             cost = best["cost"]
 
-            local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+2, j+1, &cost)
+            local_last_nodes = get_cost_adj_partial(route, q, Q, costs, best["last_nodes"], i+2, j+1, &cost)
 
             if DEBUG_COST:
-                check_cost(route, q, Q, cost, local_last_nodes, cost_function)
+                check_cost(route, q, Q, cost, local_last_nodes, costs)
 
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
 
     return current_best
 
-cdef dict swap_1_1(dict best, list q, int Q, cost_function):
+cdef dict swap_1_1(dict best, list q, int Q, dict costs):
     cdef int i
     cdef int j
     cdef list route
@@ -91,17 +91,17 @@ cdef dict swap_1_1(dict best, list q, int Q, cost_function):
             
             cost = best["cost"]
 
-            local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+1, j+1, &cost)
+            local_last_nodes = get_cost_adj_partial(route, q, Q, costs, best["last_nodes"], i+1, j+1, &cost)
             
             if DEBUG_COST:
-                check_cost(route, q, Q, cost, local_last_nodes, cost_function)
+                check_cost(route, q, Q, cost, local_last_nodes, costs)
 
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
 
     return current_best
 
-cdef dict swap_2_2(dict best, list q, int Q, cost_function):
+cdef dict swap_2_2(dict best, list q, int Q, dict costs):
     cdef int i
     cdef int j
     cdef list route
@@ -119,17 +119,17 @@ cdef dict swap_2_2(dict best, list q, int Q, cost_function):
 
             cost = best["cost"]
 
-            local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+2, j+2, &cost)
+            local_last_nodes = get_cost_adj_partial(route, q, Q, costs, best["last_nodes"], i+2, j+2, &cost)
             
             if DEBUG_COST:
-                check_cost(route, q, Q, cost, local_last_nodes, cost_function)
+                check_cost(route, q, Q, cost, local_last_nodes, costs)
 
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
 
     return current_best
 
-cdef dict swap_3_3_reversed(dict best, list q, int Q, cost_function):
+cdef dict swap_3_3_reversed(dict best, list q, int Q, dict costs):
     cdef int i
     cdef int j
     cdef list route
@@ -147,17 +147,17 @@ cdef dict swap_3_3_reversed(dict best, list q, int Q, cost_function):
 
             cost = best["cost"]
             
-            local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+3, j+3, &cost)
+            local_last_nodes = get_cost_adj_partial(route, q, Q, costs, best["last_nodes"], i+3, j+3, &cost)
             
             if DEBUG_COST:
-                check_cost(route, q, Q, cost, local_last_nodes, cost_function)
+                check_cost(route, q, Q, cost, local_last_nodes, costs)
 
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
     
     return current_best
 
-cdef dict swap_3_3(dict best, list q, int Q, cost_function):
+cdef dict swap_3_3(dict best, list q, int Q, dict costs):
     cdef int i
     cdef int j
     cdef list route
@@ -175,10 +175,10 @@ cdef dict swap_3_3(dict best, list q, int Q, cost_function):
 
             cost = best["cost"]
             
-            local_last_nodes = get_cost_adj_partial(route, q, Q, cost_function, best["last_nodes"], i+3, j+3, &cost)
+            local_last_nodes = get_cost_adj_partial(route, q, Q, costs, best["last_nodes"], i+3, j+3, &cost)
             
             if DEBUG_COST:
-                check_cost(route, q, Q, cost, local_last_nodes, cost_function)
+                check_cost(route, q, Q, cost, local_last_nodes, costs)
             
             if cost < current_best["cost"]:
                 current_best = {"move": None, "route": route, "cost": cost, "last_nodes": local_last_nodes}
