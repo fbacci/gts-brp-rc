@@ -1,6 +1,6 @@
 import math
 
-def split(S, q, n, W, d, L, cost_function):
+cdef list split(list S, list q, int n, int W, list d, float L, dict costs):
     """
         Parameters:
             S: TSP route to convert
@@ -9,9 +9,22 @@ def split(S, q, n, W, d, L, cost_function):
             W: capacity of vehicle
             d: cost to visit a node (0 if vrp)
             L: maximum route cost (infinity inf vrp)
-            cost_function: a function which calculate the cost between two nodes
+            costs: costs dict
     """
-    V = []
+
+    cdef int i
+    cdef int j
+
+    cdef list V = []
+    cdef list P
+
+    cdef int cost
+    cdef list P_dup
+    cdef list sum_qp
+
+    cdef int qp_max
+    cdef int qp_min
+
     V.append(0)
 
     for i in range(1, n+1):
@@ -44,9 +57,9 @@ def split(S, q, n, W, d, L, cost_function):
                 qp_min = 0
 
             if i == j:
-                cost = cost_function(0, S[j]) + d[S[j]] + cost_function(S[j], 0)
+                cost = costs[0, S[j]] + d[S[j]] + costs[S[j], 0]
             else:
-                cost = cost - cost_function(S[j-1], 0) + cost_function(S[j-1], S[j]) + d[S[j]] + cost_function(S[j], 0)
+                cost = cost - costs[S[j-1], 0] + costs[S[j-1], S[j]] + d[S[j]] + costs[S[j], 0]
 
             if (cost <= L) and (qp_max - qp_min <= W):
                 if V[i-1]+cost < V[j]:
@@ -58,8 +71,11 @@ def split(S, q, n, W, d, L, cost_function):
                 break
     return P
 
-def extract_vrp(n, S, P):
-    trip = []
+cdef list extract_vrp(int n, list S, list P):
+    cdef list trip = []
+    cdef int t
+    cdef int i
+    cdef int j
 
     for _ in range(1, n+1):
         trip.append([])
@@ -81,22 +97,25 @@ def extract_vrp(n, S, P):
 
     return trip
 
-def convert_tsp_to_vrp(S, q, n, W, cost_function, d=None, L=math.inf):
+cdef list convert_tsp_to_vrp(list S, list q, int n, int W, dict costs):
     """
         Parameters:
             S: TSP route to convert
             q: demand at nodes
             n: number of nodes
             W: capacity of vehicle
-            cost_function: a function which calculate the cost between two nodes
+            costs: cost dict
             d: cost to visit a node (0 if vrp)
             L: maximum route cost (infinity inf vrp)
     """
 
+    cdef list P
+    cdef d=None
+    cdef L=math.inf
 
     if d is None:
         d = [0 for _ in range(n+1)]
 
-    P = split([0]+S, q, n, W, d, L, cost_function)
+    P = split([0]+S, q, n, W, d, L, costs)
 
     return extract_vrp(n, [0]+S, P)
