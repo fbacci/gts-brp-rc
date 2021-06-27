@@ -34,13 +34,13 @@ def graph(solutions, dataset):
 if __name__ == "__main__":
     df = pd.DataFrame(columns=['Instance', 'Our obj', 'Paper Obj', 'Our Time', 'Paper Time', 'GAP'])
 
-    results_file = open("dataset/results.txt", "r").read().split('\n')
+    results_file = open("dataset/results_2.txt", "r").read().split('\n')
     results = utils.open_results(results_file)
 
     for result in results:
         print(result["instance"])
         # read dataset
-        n, c, q, Q  = utils.open_dataset("dataset/" + result["instance"])
+        n, c, q, Q  = utils.open_dataset("dataset/metaheuristic/" + result["instance"])
 
         def cost_function(from_node, to_node):
             return c[from_node, to_node]

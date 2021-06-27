@@ -1,9 +1,13 @@
-from utils cimport get_cost_adj, get_cost_adj_partial, calculate_route_cost
+from utils cimport get_cost_adj, calculate_route_cost, get_cost_prins
 from SplitRoute cimport convert_tsp_to_vrp
 from itertools import accumulate
 import math
 
 cdef bint DEBUG_COST = False
+
+cdef dict get_cost_adj_partial(list new_route, list q, int Q, dict costs, dict last_nodes, int i, int j, float *old_cost):
+    old_cost[0] = get_cost_prins(new_route, q, len(new_route), Q, costs)
+    return None
 
 cdef void check_cost(list route, list q, int Q, float cost2, dict last_nodes2, dict costs):
     cdef float cost = 0

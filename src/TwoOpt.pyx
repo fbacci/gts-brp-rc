@@ -1,7 +1,11 @@
-from utils cimport calculate_route_cost, get_cost_adj
+from utils cimport calculate_route_cost, get_cost_prins
 from itertools import accumulate
 from SplitRoute cimport convert_tsp_to_vrp
 from operator import itemgetter
+
+cdef dict get_cost_adj(list new_route, list q, int Q, dict costs, float *cost):
+    cost[0] = get_cost_prins(new_route, q, len(new_route), Q, costs)
+    return dict()
 
 cdef class TwoOpt:
     def __init__(self, costs):

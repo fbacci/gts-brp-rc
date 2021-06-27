@@ -1,4 +1,5 @@
 from itertools import islice
+from SplitRoute cimport convert_tsp_to_vrp
 
 cpdef float calculate_route_cost(dict costs, list route):
     """
@@ -142,6 +143,16 @@ cdef dict get_cost_adj(list new_route, list q, int Q, dict costs, float *cost):
 
     cost[0] += cost_adj
     return last_nodes
+
+cdef float get_cost_prins(list route, list q, int route_size, int Q, dict costs):
+    cdef float cost = 0
+    routes = convert_tsp_to_vrp(route, q, route_size, Q, costs)
+    routes = list(filter(None, routes))
+
+    for route2 in routes:
+        cost += calculate_route_cost(costs, route2)
+
+    return cost
 
 def open_dataset(file):
     dataset = open(file, "r")
