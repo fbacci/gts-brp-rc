@@ -3,13 +3,10 @@ import time
 from TabuSearch import TabuSearch
 from transportation import solve_transportation_problem
 import pandas as pd
-from docplex.mp.solution import SolveSolution
 import seaborn as sns
 import matplotlib.pyplot as plt
 from saving import initial_solution
-from utils import calculate_route_cost
-from Network import Network
-from Node import Node
+from utils import calculate_route_cost, write_cplex_solution
 
 """
 n: station number
@@ -93,6 +90,8 @@ if __name__ == "__main__":
 
         print(100*solution["cost"]/float(result["cost"])-100)
         print(solution)
+
+        write_cplex_solution(solution["route"], n, result["instance"], solution["cost"])
 
         #graph(solutions, result["instance"])
 

@@ -1,4 +1,5 @@
 from itertools import islice
+import pickle
 
 cpdef float calculate_route_cost(cost_function, list route):
     """
@@ -182,3 +183,23 @@ def open_results(results_file):
         results.append(result_row)
 
     return results
+
+def write_cplex_solution(routes, n, instance, cost):
+    adjacencies_dict = {}
+
+    for route in routes:
+        route = [0] + route + [0]
+        for i in range(1, len(route)):
+            adjacencies_dict[(route[i-1], route[i])] = 1
+
+    value_map = {}
+
+    for i in range(0, n):
+        for j in range(0, n):
+           value_map["x_" + str(i) + "_" + str(j)] = 1 if (i,j) in adjacencies_dict else 0
+
+    sol_object = {"value_map": value_map, "cost": cost}
+    
+    with open('dataset/solutions/' + instance + '.sol', 'wb') as output:
+        pickle.dump(sol_object, output, pickle.HIGHEST_PROTOCOL)
+        
