@@ -5,6 +5,7 @@ from TwoOpt cimport TwoOpt
 from LocalSearch cimport move, move_2_reverse, swap_1_1, swap_2_2, swap_3_3_reversed, swap_3_3
 from utils cimport calculate_route_cost
 import bisect
+from itertools import islice
 
 cdef class TabuSearch:
     """
@@ -53,8 +54,12 @@ cdef class TabuSearch:
         for node in N:
             self.A.add((0, node))
             self.A.add((node, 0))
+            
 
-    cdef set granular(self, list N, float max_cost):
+        self.used_arcs = [[0 for _ in range(len(self.N)+1)] for _ in range(len(self.N)+1)]
+        self.used_arcs_number = 0
+
+    cdef set granular(self, list N, float max_cost, list used_arcs_frequency = None):
         """
         Parameters:
             N: nodes without deposit
@@ -63,10 +68,24 @@ cdef class TabuSearch:
 
         cdef set A = set(self.A)
 
-        index_last_reduced_cost = bisect.bisect_right(self.reduced_costs_costs, max_cost)
+        #index_last_reduced_cost = bisect.bisect_right(self.reduced_costs_costs, max_cost)
 
         # add arcs with reduced costs included in the threshold
-        A.update(self.reduced_costs_arcs[0:index_last_reduced_cost])
+        #A.update(self.reduced_costs_arcs[0:index_last_reduced_cost])
+
+        cdef dict rc = {}
+
+        if self.used_arcs_number > 0 and used_arcs_frequency != None:
+            for i in range(len(self.reduced_costs_costs)):
+                if self.reduced_costs_costs[i] >= 0:
+                    rc[self.reduced_costs_arcs[i]] = self.reduced_costs_costs[i] - (self.reduced_costs_costs[i] * 1/(0.1+used_arcs_frequency[self.reduced_costs_arcs[i][0]][self.reduced_costs_arcs[i][1]]))
+                else:
+                    rc[self.reduced_costs_arcs[i]] = self.reduced_costs_costs[i] + (self.reduced_costs_costs[i] * 1/(0.1+used_arcs_frequency[self.reduced_costs_arcs[i][0]][self.reduced_costs_arcs[i][1]]))
+                    
+                A.update([k for k, v in rc.items() if v <= max_cost])
+        else:
+            index_last_reduced_cost = bisect.bisect_right(self.reduced_costs_costs, max_cost)
+            A.update(self.reduced_costs_arcs[0:index_last_reduced_cost])
 
         return A
 
@@ -76,6 +95,12 @@ cdef class TabuSearch:
 
         """
 
+        # calculate arcs frequency
+        if self.used_arcs_number > 0:
+            used_arcs_frequency = [[self.used_arcs[i][j]/self.used_arcs_number for i in range(len(self.N)+1)] for j in range(len(self.N)+1)]
+        else:
+            used_arcs_frequency = []
+
         # after iteration_number_max iterations without best solution, augment the granularity
         max_cost[0] = max_cost[0] + abs(max_cost[0]*percentage_increment)
 
@@ -83,7 +108,7 @@ cdef class TabuSearch:
         if max_cost[0] > -100 and max_cost[0] <= 0:
             max_cost[0] = 1000
 
-        A = self.granular(self.N, max_cost[0])
+        A = self.granular(self.N, max_cost[0], used_arcs_frequency)
 
         best_count[0] = 0
 
@@ -168,6 +193,11 @@ cdef class TabuSearch:
                 solutions.append({"iteration": it_count, "f obj": vrp_cost, "best": False})
 
                 if vrp_cost < best_route["cost"]:
+                    # update used arcs
+                    for node, next_node in zip(best_valid_neighborhood["route"], islice(best_valid_neighborhood["route"], 1, None)):
+                        self.used_arcs[node][next_node] = self.used_arcs[node][next_node] + 1
+                        self.used_arcs_number = self.used_arcs_number + 1
+
                     # New best solution found
                     solutions[-1]["best"] = True
 
