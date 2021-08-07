@@ -78,9 +78,9 @@ cdef class TabuSearch:
         if self.used_arcs_number > 0 and used_arcs_frequency != None:
             for i in range(len(self.reduced_costs_costs)):
                 if self.reduced_costs_costs[i] >= 0:
-                    rc[self.reduced_costs_arcs[i]] = self.reduced_costs_costs[i] - (self.reduced_costs_costs[i] * 1/(0.1+used_arcs_frequency[self.reduced_costs_arcs[i][0]][self.reduced_costs_arcs[i][1]]))
+                    rc[self.reduced_costs_arcs[i]] = self.reduced_costs_costs[i] - 0.3*(self.reduced_costs_costs[i] * 1/(0.1+used_arcs_frequency[self.reduced_costs_arcs[i][0]][self.reduced_costs_arcs[i][1]]))
                 else:
-                    rc[self.reduced_costs_arcs[i]] = self.reduced_costs_costs[i] + (self.reduced_costs_costs[i] * 1/(0.1+used_arcs_frequency[self.reduced_costs_arcs[i][0]][self.reduced_costs_arcs[i][1]]))
+                    rc[self.reduced_costs_arcs[i]] = self.reduced_costs_costs[i] + 0.45*(self.reduced_costs_costs[i] * 1/(0.1+used_arcs_frequency[self.reduced_costs_arcs[i][0]][self.reduced_costs_arcs[i][1]]))
                     
                 A.update([k for k, v in rc.items() if v <= max_cost])
         else:

@@ -79,7 +79,7 @@ if __name__ == "__main__":
         reduced_costs_costs = [v for k,v in {k: v for k, v in sorted(reduced_costs_matrix.items(), key=lambda item: item[1])}.items()]
 
         # tabu search
-        ts = TabuSearch(routes_filtered, reduced_costs_arcs, reduced_costs_costs, 500, 15, c, q, Q, N)
+        ts = TabuSearch(routes_filtered, reduced_costs_arcs, reduced_costs_costs, 1500, 15, c, q, Q, N)
         start_time = time.time()
         solution = ts.start(total_cost)
         #solution, solutions = ts.start(total_cost)
